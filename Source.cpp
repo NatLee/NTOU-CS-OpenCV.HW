@@ -40,7 +40,13 @@ int main()
 	namedWindow("Original", WINDOW_AUTOSIZE);
 	namedWindow("Skin", WINDOW_AUTOSIZE);
 
-	int now_row = 87;
+	int now_row = 87;//8777777777777
+
+	int breath=0;
+	bool change = false;
+	int row_max = 0;
+	int row_min=8787;
+
 	for (;;) {
 		Mat frame;
 		cap >> frame;
@@ -77,10 +83,38 @@ int main()
 					}
 					check = true;
 					//cout << now_row << " " << row << endl;
-					if (now_row > row)
-						cout << "UP" << endl;
-					else if (now_row < row)
-						cout << "DOWN" << endl;
+
+					if (row_max < row)//record max row
+						row_max = row;
+
+					if (row_min > row)//record min row
+						row_min = row;
+
+					if (now_row > row){
+						if (!change){
+							if (row_max - row_min > 5){
+								breath++;
+								cout << "呼吸次數: " << breath / 2 << endl;
+							}
+							row_max = 0;
+							row_min = 8787;
+							change = true;
+						}
+						//cout << "UP" << endl;
+					}
+					else if (now_row < row){
+						if (change){
+							if (row_max - row_min > 5){
+								breath++;
+								cout << "呼吸次數: " << breath / 2 << endl;
+							}
+								
+							row_max = 0;
+							row_min = 8787;
+							change = false;
+						}
+						//cout << "DOWN" << endl;
+				}
 					else
 						cout << "NO MOVE" << endl;
 					now_row = row;
@@ -96,6 +130,7 @@ int main()
 		if (check){
 			//cout << "Yee" << endl;
 		}
+		
 		imshow("Original", frame);
 		imshow("Skin", color(frame));
 
