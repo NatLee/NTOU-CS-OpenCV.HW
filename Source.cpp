@@ -38,17 +38,16 @@ int main()
 	VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;
 	namedWindow("Original", WINDOW_AUTOSIZE);
-	//namedWindow("Shirt", WINDOW_AUTOSIZE);
+	namedWindow("Skin", WINDOW_AUTOSIZE);
 	for (;;) {
 		Mat frame;
 		cap >> frame;
 
 		flip(frame, frame, 1);
 
-		//Mat shirt = Mat(Size(frame.cols, frame.rows), CV_8UC1, Scalar::all(0));
-		double b, g, r;
-
 		bool check = false;
+
+		int now_row = frame.rows-2;
 
 		for (int row = frame.rows - 2; row >= 0; row--)//NO FIRST
 		{
@@ -66,6 +65,7 @@ int main()
 						break;
 					}
 				}
+				now_row = row;
 				if (count == long_max) {
 					for (int lineLength = col; lineLength > col - lineLengthMax && col > lineLengthMax; lineLength--) {
 						for (int lineWidth = row; lineWidth > row - 5 && row > 5; lineWidth--) {
@@ -75,6 +75,11 @@ int main()
 						}
 					}
 					check = true;
+					now_row = row;
+					if (now_row > row)
+						cout << "UP" << endl;
+					else
+						cout << "DOWN" << endl;
 					break;
 				}
 
@@ -83,10 +88,11 @@ int main()
 				break;
 			}
 		}
-		if (check)
-			cout << "Yee" << endl;
+		if (check){
+			//cout << "Yee" << endl;
+		}
 		imshow("Original", frame);
-		//imshow("Shirt", shirt);
+		imshow("Skin", color(frame));
 
 		if (waitKey(30) >= 0) break;
 	}
