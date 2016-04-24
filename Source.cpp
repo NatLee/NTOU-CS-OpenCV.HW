@@ -6,13 +6,21 @@
 #include <iostream>
 #include <cstdio>
 
-#define range 5
+#define range 10
 #define blue 203
 #define green 224
 #define red 252
 
 using namespace std;
 using namespace cv;
+
+
+Mat color(Mat& src) {
+	inRange(src, Scalar(blue - range, green - range, red - range), Scalar(blue + range, green + range, red + range), src);
+	return src;
+}
+
+
 
 bool color(double b, double g, double r) {
 	if ((b > blue - range && b < blue + range) && (g>green - range && g < green + range) && (r>red - range && r < red + range))
@@ -34,7 +42,7 @@ int main()
 
 		flip(frame, frame, 1);
 
-		Mat shirt = Mat(Size(frame.cols, frame.rows), CV_8UC1, Scalar::all(0));
+		//Mat shirt = Mat(Size(frame.cols, frame.rows), CV_8UC1, Scalar::all(0));
 		double b, g, r;
 
 		bool check = false;
@@ -76,8 +84,8 @@ int main()
 		}
 		if (check)
 			cout << "Yee" << endl;
-		imshow("Original", frame);
-		imshow("Shirt", shirt);
+		imshow("Original", color(frame));
+		//imshow("Shirt", shirt);
 
 		if (waitKey(30) >= 0) break;
 	}
