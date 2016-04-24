@@ -11,8 +11,8 @@
 using namespace std;
 using namespace cv;
 
-bool color(double r , double g , double b){
-	if (b > 75 - range && b < 75 + range && g>97 - range && g < 97 + range && r>125 - range && r < 125 + range)
+bool color(double b, double g, double r) {
+	if ((b > 75 - range && b < 75 + range) && (g>97 - range && g < 97 + range) && (r>125 - range && r < 125 + range))
 		return true;
 	else
 		return false;
@@ -25,41 +25,52 @@ int main()
 	if (!cap.isOpened()) return -1;
 	namedWindow("Original", WINDOW_AUTOSIZE);
 	namedWindow("Shirt", WINDOW_AUTOSIZE);
-	for (;;){
+	for (;;) {
 		Mat frame;
 		cap >> frame;
 
-		flip(frame, frame, 1);//左右翻轉影像
+		flip(frame, frame, 1);
 
-		//宣告同大小的空Mat用來裝衣領
 		Mat shirt = Mat(Size(frame.cols, frame.rows), CV_8UC1, Scalar::all(0));
-		double b, g, r;//3原色
+		double b, g, r;
 
-		for (int j = frame.rows-1; j >=0; --j)
+		bool check = false;
+
+		for (int j = frame.rows - 1; j >= 0; --j)
 		{
-			for (int i = frame.cols-1; i >=0; --i)
+			for (int i = frame.cols - 1; i >= 0; --i)
 			{
 				b = frame.at<Vec3b>(j, i)[0];//B
 				g = frame.at<Vec3b>(j, i)[1];//G
 				r = frame.at<Vec3b>(j, i)[2];//R
-				int count=0;
-				for (int k = j; k < j - 100 && j>100; k++){
-					if (color(r, g, b)){
-						count++; //計數
-						continue;
+				int count = 0;
+				for (int k = j; k > j - 100 && j>100; k--) {
+					if (color(b, g, r)) {
+						count++;
 					}
-					else{
+					else {
 						break;
 					}
 				}
-				if (count == 100){
-					cout << "衣領" << endl;
+				if (count == 100) {
+					for (int k = j; k > j - 100 && j > 100; k--) {
+						for (int l = i; l > i - 5; l--) {
+							frame.at<Vec3b>(k, l)[0] = 0;
+							frame.at<Vec3b>(k, l)[1] = 255;
+							frame.at<Vec3b>(k, l)[2] = 0;
+						}
+					}
+					check = true;
+					break;
 				}
-							/*以上是寫如果是膚色就在這做判斷*/
-							/*然後設變數抓大面積膚色，如果是 就是衣領了*/
-							/*可是我不會，求教學*/
+
+			}
+			if (check) {
+				break;
 			}
 		}
+		if (check)
+			cout << "衣領" << endl;
 		imshow("Original", frame);
 		imshow("Shirt", shirt);
 
