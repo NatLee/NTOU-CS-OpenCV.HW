@@ -82,7 +82,7 @@ int main(){
                         if (!change){
                             if (row_max - row_min > 5){
                                 breath++;
-                                cout << "©I§l¦¸¼Æ: " << breath / 2 << endl;
+                                cout << "å‘¼å¸æ¬¡æ•¸: " << breath / 2 << endl;
                             }
                             row_max = 0;
                             row_min = 8787;
@@ -94,7 +94,7 @@ int main(){
                         if (change){
                             if (row_max - row_min > 5){
                                 breath++;
-                                cout << "©I§l¦¸¼Æ: " << breath / 2 << endl;
+                                cout << "Â©IÂ§lÂ¦Â¸Â¼Ã†: " << breath / 2 << endl;
                             }
                             row_max = 0;
                             row_min = 8787;
