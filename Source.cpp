@@ -39,6 +39,8 @@ int main()
 	if (!cap.isOpened()) return -1;
 	namedWindow("Original", WINDOW_AUTOSIZE);
 	namedWindow("Skin", WINDOW_AUTOSIZE);
+
+	int now_row = 87;
 	for (;;) {
 		Mat frame;
 		cap >> frame;
@@ -47,7 +49,7 @@ int main()
 
 		bool check = false;
 
-		int now_row = frame.rows-2;
+		
 
 		for (int row = frame.rows - 2; row >= 0; row--)//NO FIRST
 		{
@@ -74,8 +76,8 @@ int main()
 						}
 					}
 					check = true;
-					cout << now_row << " " << row << endl;
-					if (now_row < row)
+					//cout << now_row << " " << row << endl;
+					if (now_row > row)
 						cout << "UP" << endl;
 					else
 						cout << "DOWN" << endl;
