@@ -6,10 +6,13 @@
 #include <iostream>
 #include <cstdio>
 
-#define range 10
+#define range 50
 #define blue 203
 #define green 224
 #define red 252
+
+#define long_max 120
+#define lineLengthMax 200
 
 using namespace std;
 using namespace cv;
@@ -52,7 +55,7 @@ int main()
 			for (int col = frame.cols - 2; col >= 0; col--)
 			{
 				int count = 0;
-				for (int k = col; k > col - 100 && col>100 ; k--) {
+				for (int k = col; k > col - long_max && col>long_max; k--) {
 					if (color(frame.at<Vec3b>(row, k)[0], frame.at<Vec3b>(row, k)[1], frame.at<Vec3b>(row,k)[2])){
 
 						if (!color(frame.at<Vec3b>(row + 1, col)[0], frame.at<Vec3b>(row + 1, col)[1], frame.at<Vec3b>(row + 1, col)[2]))
@@ -63,8 +66,8 @@ int main()
 						break;
 					}
 				}
-				if (count == 100) {
-					for (int lineLength = col; lineLength > col - 100 && col > 100; lineLength--) {
+				if (count == long_max) {
+					for (int lineLength = col; lineLength > col - lineLengthMax && col > lineLengthMax; lineLength--) {
 						for (int lineWidth = row; lineWidth > row - 5 && row > 5; lineWidth--) {
 							frame.at<Vec3b>(lineWidth, lineLength)[0] = 0;
 							frame.at<Vec3b>(lineWidth, lineLength)[1] = 255;
