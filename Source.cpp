@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cstdio>
 
-#define range 50
+#define range 10
 
 using namespace std;
 using namespace cv;
@@ -44,7 +44,7 @@ int main()
 				g = frame.at<Vec3b>(j, i)[1];//G
 				r = frame.at<Vec3b>(j, i)[2];//R
 				int count = 0;
-				for (int k = j; k > j - 100 && j>100; k--) {
+				for (int k = i; k > i - 100 && i>100; k--) {
 					if (color(b, g, r)) {
 						count++;
 					}
@@ -53,11 +53,11 @@ int main()
 					}
 				}
 				if (count == 100) {
-					for (int k = j; k > j - 100 && j > 100; k--) {
-						for (int l = i; l > i - 5; l--) {
-							frame.at<Vec3b>(k, l)[0] = 0;
-							frame.at<Vec3b>(k, l)[1] = 255;
-							frame.at<Vec3b>(k, l)[2] = 0;
+					for (int k = i; k > i - 100 && i > 100; k--) {
+						for (int l = j; l > j - 5 && j > 5; l--) {
+							frame.at<Vec3b>(l, k)[0] = 0;
+							frame.at<Vec3b>(l, k)[1] = 255;
+							frame.at<Vec3b>(l, k )[2] = 0;
 						}
 					}
 					check = true;
@@ -70,7 +70,7 @@ int main()
 			}
 		}
 		if (check)
-			cout << "¦ç»â" << endl;
+			cout << "Yee" << endl;
 		imshow("Original", frame);
 		imshow("Shirt", shirt);
 
