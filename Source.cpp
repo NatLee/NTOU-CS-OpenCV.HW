@@ -65,7 +65,6 @@ int main()
 						break;
 					}
 				}
-				now_row = row;
 				if (count == long_max) {
 					for (int lineLength = col; lineLength > col - lineLengthMax && col > lineLengthMax; lineLength--) {
 						for (int lineWidth = row; lineWidth > row - 5 && row > 5; lineWidth--) {
@@ -75,11 +74,13 @@ int main()
 						}
 					}
 					check = true;
-					now_row = row;
-					if (now_row > row)
+					cout << now_row << " " << row << endl;
+					if (now_row < row)
 						cout << "UP" << endl;
 					else
 						cout << "DOWN" << endl;
+					now_row = row;
+
 					break;
 				}
 
