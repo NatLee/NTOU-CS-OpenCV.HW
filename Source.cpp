@@ -79,8 +79,10 @@ int main()
 					//cout << now_row << " " << row << endl;
 					if (now_row > row)
 						cout << "UP" << endl;
-					else
+					else if (now_row < row)
 						cout << "DOWN" << endl;
+					else
+						cout << "NO MOVE" << endl;
 					now_row = row;
 
 					break;
