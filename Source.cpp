@@ -35,7 +35,7 @@ int main()
 	VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;
 	namedWindow("Original", WINDOW_AUTOSIZE);
-	namedWindow("Shirt", WINDOW_AUTOSIZE);
+	//namedWindow("Shirt", WINDOW_AUTOSIZE);
 	for (;;) {
 		Mat frame;
 		cap >> frame;
@@ -51,22 +51,20 @@ int main()
 		{
 			for (int col = frame.cols - 2; col >= 0; col--)
 			{
-				b = frame.at<Vec3b>(row, col)[0];//B
-				g = frame.at<Vec3b>(row, col)[1];//G
-				r = frame.at<Vec3b>(row, col)[2];//R
 				int count = 0;
-				if ( !color(frame.at<Vec3b>(row + 1, col)[0], frame.at<Vec3b>(row + 1, col)[1], frame.at<Vec3b>(row + 1, col)[2]))
-					count--;
-				for (int k = col; k > col - 200 && col>200 ; k--) {
-					if (color(b, g, r)){
+				for (int k = col; k > col - 100 && col>100 ; k--) {
+					if (color(frame.at<Vec3b>(row, k)[0], frame.at<Vec3b>(row, k)[1], frame.at<Vec3b>(row,k)[2])){
+
+						if (!color(frame.at<Vec3b>(row + 1, col)[0], frame.at<Vec3b>(row + 1, col)[1], frame.at<Vec3b>(row + 1, col)[2]))
+							break;						
 						count++;
 					}
 					else {
 						break;
 					}
 				}
-				if (count == 200) {
-					for (int lineLength = col; lineLength > col - 300 && col > 300; lineLength--) {
+				if (count == 100) {
+					for (int lineLength = col; lineLength > col - 100 && col > 100; lineLength--) {
 						for (int lineWidth = row; lineWidth > row - 5 && row > 5; lineWidth--) {
 							frame.at<Vec3b>(lineWidth, lineLength)[0] = 0;
 							frame.at<Vec3b>(lineWidth, lineLength)[1] = 255;
@@ -84,7 +82,7 @@ int main()
 		}
 		if (check)
 			cout << "Yee" << endl;
-		imshow("Original", color(frame));
+		imshow("Original", frame);
 		//imshow("Shirt", shirt);
 
 		if (waitKey(30) >= 0) break;
