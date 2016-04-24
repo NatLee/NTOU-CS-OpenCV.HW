@@ -36,15 +36,15 @@ int main()
 
 		bool check = false;
 
-		for (int j = frame.rows - 1; j >= 0; --j)
+		for (int row = frame.rows - 1; row >= 0; --row)
 		{
-			for (int i = frame.cols - 1; i >= 0; --i)
+			for (int col = frame.cols - 1; col >= 0; --col)
 			{
-				b = frame.at<Vec3b>(j, i)[0];//B
-				g = frame.at<Vec3b>(j, i)[1];//G
-				r = frame.at<Vec3b>(j, i)[2];//R
+				b = frame.at<Vec3b>(row, col)[0];//B
+				g = frame.at<Vec3b>(row, col)[1];//G
+				r = frame.at<Vec3b>(row, col)[2];//R
 				int count = 0;
-				for (int k = i; k > i - 100 && i>100; k--) {
+				for (int k = col; k > col - 100 && col>100; k--) {
 					if (color(b, g, r)) {
 						count++;
 					}
@@ -53,11 +53,11 @@ int main()
 					}
 				}
 				if (count == 100) {
-					for (int k = i; k > i - 100 && i > 100; k--) {
-						for (int l = j; l > j - 5 && j > 5; l--) {
-							frame.at<Vec3b>(l, k)[0] = 0;
-							frame.at<Vec3b>(l, k)[1] = 255;
-							frame.at<Vec3b>(l, k )[2] = 0;
+					for (int lineLength = col; lineLength > col - 100 && col > 100; lineLength--) {
+						for (int lineWidth = row; lineWidth > row - 5 && row > 5; lineWidth--) {
+							frame.at<Vec3b>(lineWidth, lineLength)[0] = 0;
+							frame.at<Vec3b>(lineWidth, lineLength)[1] = 255;
+							frame.at<Vec3b>(lineWidth, lineLength)[2] = 0;
 						}
 					}
 					check = true;
