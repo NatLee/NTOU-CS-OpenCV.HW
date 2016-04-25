@@ -17,19 +17,22 @@
 using namespace std;
 using namespace cv;
 
-
 Mat color(Mat& src) {
-    inRange(src, Scalar(blue - range, green - range, red - range), Scalar(blue + range, green + range, red + range), src);
+    cvtColor( src, src, CV_BGR2HSV );
+    inRange(src, Scalar(0, 58, 20), Scalar(50, 173, 230), src);
+    erode(src, src, Mat(), Point( -1 , -1 ), 3 );
+    dilate(src, src, Mat(), Point( -1 , -1 ), 3 );
     return src;
 }
-
-
 
 bool color(double b, double g, double r) {
     if ((b > blue - range && b < blue + range) && (g>green - range && g < green + range) && (r>red - range && r < red + range))
         return true;
     else
         return false;
+}
+bool color(double b){
+    return b!=0;
 }
 
 
@@ -46,8 +49,10 @@ int main(){
     int row_min=8787;
     
     for (;;) {
-        Mat frame;
+        Mat frame,skin;
         cap >> frame;
+        frame.copyTo(skin);
+        color(skin);
         
         flip(frame, frame, 1);
         
@@ -56,10 +61,8 @@ int main(){
             for (int col = frame.cols - 2; col >= 0; col--){
                 int count = 0;
                 for (int k = col; k > col - long_max && col>long_max; k--) {
-                    if (color(frame.at<Vec3b>(row, k)[0], frame.at<Vec3b>(row, k)[1], frame.at<Vec3b>(row,k)[2])){
-                        
-                        if (!color(frame.at<Vec3b>(row + 1, col)[0], frame.at<Vec3b>(row + 1, col)[1], frame.at<Vec3b>(row + 1, col)[2]))
-                            break;
+                    //if (color(frame.at<Vec3b>(row, k)[0], frame.at<Vec3b>(row, k)[1], frame.at<Vec3b>(row,k)[2])){
+                    if(color(skin.at<Vec3b>(row,k)[0])){
                         count++;
                     }
                     else {
@@ -94,7 +97,7 @@ int main(){
                         if (change){
                             if (row_max - row_min > 5){
                                 breath++;
-                                cout << "©I§l¦¸¼Æ: " << breath / 2 << endl;
+                                cout << "呼吸次數: " << breath / 2 << endl;
                             }
                             row_max = 0;
                             row_min = 8787;
@@ -108,13 +111,11 @@ int main(){
                     break;
                 }
             }
-            if (check) {
-                break;
-            }
+            if (check) break;
         }
         
         imshow("Original", frame);
-        imshow("Skin", color(frame));
+        imshow("Skin", skin);
         if (waitKey(30) >= 0) break;
     }
     return 0;
