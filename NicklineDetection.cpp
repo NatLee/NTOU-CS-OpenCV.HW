@@ -8,25 +8,24 @@
 #define long_max 120
 #define lineLengthMax 200
 
-int iLowH = 0;
-int iHighH = 35;
+int LY = 0;
+int HY = 255;
 
-int iLowS = 58;
-int iHighS =174;
+int LCr = 137;
+int HCr = 177;
 
-int iLowV = 0;
-int iHighV = 255;
-
+int LCb = 77;
+int HCb = 127;
 
 using namespace std;
 using namespace cv;
 
 Mat color(Mat& src) {
-    cvtColor(src, src, CV_BGR2HSV);
-    inRange(src, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), src);
-    
-    //cvtColor( src, src, cv::COLOR_BGR2YCrCb );
-    //inRange( src, cv::Scalar(80, 135, 85), cv::Scalar(255, 180, 135), src );
+    //cvtColor(src, src, CV_BGR2HSV);
+    //inRange(src, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), src);
+    cvtColor( src, src, cv::COLOR_BGR2YCrCb );
+    inRange( src, Scalar(LY, LCr, LCb), Scalar(HY, HCr, HCb), src );
+    //inRange( src, Scalar(80, 135, 85), Scalar(255, 180, 135), src );
     
     erode(src, src, Mat(), Point(-1, -1), 6);
     dilate(src, src, Mat(), Point(-1, -1), 6);
@@ -44,12 +43,12 @@ int main(){
     namedWindow("Skin", WINDOW_AUTOSIZE);
     namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
     //Create trackbars in "Control" window
-    cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
-    cvCreateTrackbar("HighH", "Control", &iHighH, 179);
-    cvCreateTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
-    cvCreateTrackbar("HighS", "Control", &iHighS, 255);
-    cvCreateTrackbar("LowV", "Control", &iLowV, 255); //Value (0 - 255)
-    cvCreateTrackbar("HighV", "Control", &iHighV, 255);
+    cvCreateTrackbar("LowY", "Control", &LY, 255);
+    cvCreateTrackbar("HighY", "Control", &HY, 255);
+    cvCreateTrackbar("LowCr", "Control", &LCr, 255);
+    cvCreateTrackbar("HighCr", "Control", &HCr, 255);
+    cvCreateTrackbar("LowCb", "Control", &LCb, 255);
+    cvCreateTrackbar("HighCb", "Control", &LCb, 255);
     
     int now_row = 87;
     int breath = 0;
@@ -82,7 +81,6 @@ int main(){
                             frame.ptr<uchar>(lineWidth, lineLength)[2] = 0;
                         }
                     }
-                    //cout << now_row << " " << row << endl;
                     row_max = max(row_max, row);
                     row_min = min(row_min, row);
                     if(now_row!=row){
@@ -96,7 +94,7 @@ int main(){
                             change = now_row>row?true:false;
                         }
                     }
-                    else cout << "NO MOVE" << endl;
+                    else ;//cout << "NO MOVE" << endl;
                     now_row = row;
                     goto imgshow;
                 }
