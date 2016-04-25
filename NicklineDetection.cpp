@@ -77,9 +77,12 @@ int main() {
 					for (int lineLength = col; lineLength > col - lineLengthMax && col > lineLengthMax; lineLength--) {
 						for (int lineWidth = row; lineWidth < row + 50 && lineWidth < frame.rows-2; lineWidth++) {
 							if (!color(skin.ptr<uchar>(lineWidth+1, lineLength)[0]&& color(skin.ptr<uchar>(lineWidth, lineLength)[0]))) {
-								frame.ptr<uchar>(lineWidth, lineLength)[0] = 0;
-								frame.ptr<uchar>(lineWidth, lineLength)[1] = 255;
-								frame.ptr<uchar>(lineWidth, lineLength)[2] = 0;
+								int count = 5;
+								while (count--&&lineWidth+count<frame.rows - 2) {
+									frame.ptr<uchar>(lineWidth + count, lineLength)[0] = 0;
+									frame.ptr<uchar>(lineWidth + count, lineLength)[1] = 255;
+									frame.ptr<uchar>(lineWidth+count, lineLength)[2] = 0;
+								}
 								break;
 							}
 						}
