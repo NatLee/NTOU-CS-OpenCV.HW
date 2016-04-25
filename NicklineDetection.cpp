@@ -25,8 +25,8 @@ Mat color(Mat& src) {
 	cvtColor(src, src, CV_BGR2HSV);
 	//imshow("HSV",src);
 	inRange(src, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), src);
-	erode(src, src, Mat(), Point(-1, -1), 3);
-	dilate(src, src, Mat(), Point(-1, -1), 3);
+	erode(src, src, Mat(), Point(-1, -1), 6);
+	dilate(src, src, Mat(), Point(-1, -1), 6);
 	return src;
 }
 
