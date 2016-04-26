@@ -7,8 +7,8 @@
 
 #define long_max 120
 #define lineLengthMax 130
-#define lineWidthRange 10
-
+#define lineWidthRange 5
+#define neck_find 50
 
 int LY = 0;
 int HY = 255;
@@ -44,7 +44,7 @@ int main() {
 	namedWindow("Original", WINDOW_AUTOSIZE);
 	namedWindow("Skin", WINDOW_AUTOSIZE);
 	namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-	//Create trackbars in "Control" window
+												//Create trackbars in "Control" window
 	cvCreateTrackbar("LowY", "Control", &LY, 255);
 	cvCreateTrackbar("HighY", "Control", &HY, 255);
 	cvCreateTrackbar("LowCr", "Control", &LCr, 255);
@@ -77,13 +77,13 @@ int main() {
 				}
 				if (count == long_max) {
 					for (int lineLength = col; lineLength > col - lineLengthMax && col > lineLengthMax; lineLength--) {
-						for (int lineWidth = row; lineWidth < row + 50 && lineWidth < frame.rows - 2; lineWidth++) {
+						for (int lineWidth = row; lineWidth < row + neck_find && lineWidth < frame.rows - 2; lineWidth++) {
 							if (!color(skin.ptr<uchar>(lineWidth + 1, lineLength)[0] && color(skin.ptr<uchar>(lineWidth, lineLength)[0]))) {
-								int lineTemp=lineWidthRange;
+								int lineTemp = lineWidthRange;
 								while (lineTemp--&&lineWidth + lineTemp<frame.rows - 5) {
-									frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[0] = 0;
+									frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[0] = 255;
 									frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[1] = 0;
-									frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[2] = 255;
+									frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[2] = 0;
 								}
 								break;
 							}
@@ -95,7 +95,7 @@ int main() {
 						if (now_row>row ? !change : change) {
 							if (row_max - row_min > 5) {
 								breath++;
-								cout << "呼吸次數: " << breath / 2 << endl;
+								if (breath % 2)cout << "呼吸次數: " << breath / 2 << endl;
 							}
 							row_max = 0;
 							row_min = 8787;
