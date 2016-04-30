@@ -4,7 +4,12 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <iostream>
 #include <ctype.h>
+#include<algorithm>
 
+#define long_max 120
+#define lineLengthMax 130
+#define lineWidthRange 5
+#define neck_find 50
 
 int LY = 0;
 int HY = 255;
@@ -15,135 +20,142 @@ int HCr = 177;
 int LCb = 77;
 int HCb = 127;
 
-using namespace cv;
 using namespace std;
+using namespace cv;
 
-#define UNKNOWN_FLOW_THRESH 1e9
-
-static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step,double, const Scalar& color)
+static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step, double, const Scalar& color)
 {
-    for (int y = 0; y < cflowmap.rows; y += step)
-        for (int x = 0; x < cflowmap.cols; x += step)
-        {
-            const Point2f& fxy = flow.at<Point2f>(y, x);
-            line(cflowmap, Point(x, y), Point(cvRound(x + fxy.x), cvRound(y + fxy.y)),
-                 color);
-            circle(cflowmap, Point(x, y), 2, color, -1);
-        }
+	for (int y = 0; y < cflowmap.rows; y += step)
+		for (int x = 0; x < cflowmap.cols; x += step)
+		{
+			const Point2f& fxy = flow.at<Point2f>(y, x);
+			line(cflowmap, Point(x, y), Point(cvRound(x + fxy.x), cvRound(y + fxy.y)),
+				color);
+			circle(cflowmap, Point(x, y), 2, color, -1);
+		}
 }
 
 Mat color(Mat& src) {
-    //cvtColor(src, src, CV_BGR2HSV);
-    //inRange(src, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), src);
-    cvtColor(src, src, cv::COLOR_BGR2YCrCb);
-    inRange(src, Scalar(LY, LCr, LCb), Scalar(HY, HCr, HCb), src);
-    //inRange( src, Scalar(80, 135, 85), Scalar(255, 180, 135), src );
-    
-    erode(src, src, Mat(), Point(-1, -1), 6);
-    dilate(src, src, Mat(), Point(-1, -1), 6);
-    return src;
+	cvtColor(src, src, cv::COLOR_BGR2YCrCb);
+	inRange(src, Scalar(LY, LCr, LCb), Scalar(HY, HCr, HCb), src);
+	erode(src, src, Mat(), Point(-1, -1), 6);
+	dilate(src, src, Mat(), Point(-1, -1), 6);
+	return src;
 }
 
-void contourFilter(Mat image)
-{
-    Mat temp;
-    
-    Mat flow, cflow;
-    UMat gray, prevgray, uflow;
-    
-    RNG rng(12345);
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-    findContours(image, contours, hierarchy,
-                 CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-    //在threshold_img影像中尋找所有的輪廓
-    
-    vector<vector<Point> > contours_poly(contours.size());
-    vector<Rect> boundRect(contours.size());
-    
-    for (int i = 0; i < contours.size(); i++)
-    {
-        approxPolyDP(Mat(contours[i]), contours_poly[i], 3, true);
-        //計算可以包含輪廓的最小長方形區域
-        
-        boundRect[i] = boundingRect(Mat(contours_poly[i]));
-        
-        Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-        //隨機給一個顏色
-        
-        if (boundRect[i].area() > 50000)
-        {//長方形區域面積超過50000，則畫在影像上
-            drawContours(image, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
-            boundRect[i].y += 50;
-            rectangle(image, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0);
-            
-            int x1= boundRect[i].tl().x, y1= boundRect[i].tl().y, x2= boundRect[i].br().x, y2= boundRect[i].br().y;
-            if (boundRect[i].tl().x >= image.cols)x1 = image.cols - 2;
-            if (boundRect[i].tl().y >= image.rows)y1 = image.rows - 2;
-            if (boundRect[i].br().x >= image.cols)x2 = image.cols - 2;
-            if (boundRect[i].br().y >= image.rows)y2 = image.rows - 2;
-            
-            Rect r(x1, y1, x2-x1, y2-y1);
-            image(r).copyTo(temp);
-            
-            /*temp.copyTo(gray);
-             
-             if (!prevgray.empty())
-             {
-             calcOpticalFlowFarneback(prevgray, gray, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
-             cvtColor(prevgray, cflow, COLOR_GRAY2BGR);
-             uflow.copyTo(flow);
-             drawOptFlowMap(flow, cflow, 16, 1.5, Scalar(0, 255, 0));
-             imshow("flow", cflow);
-             }
-             
-             std::swap(prevgray, gray);*/
-            
-        }
-    }
-    
-    namedWindow("tmp", CV_WINDOW_AUTOSIZE);
-    imshow("tmp", temp);
-    
-    /*namedWindow("coutour", CV_WINDOW_AUTOSIZE);
-     imshow("coutour", image);*/
+bool color(double b) {
+	return b != 0;
 }
-int main()
-{
-    VideoCapture cap;
-    cap.open(0);
-    
-    Mat image;
-    Mat flow, cflow;
-    UMat gray, prevgray, uflow;
-    namedWindow("flow", 1);
-    
-    for (;;)
-    {
-        Mat frame;
-        cap >> frame;
-        if (frame.empty())
-            break;
-        
-        frame.copyTo(image);
-        color(image);
-        contourFilter(image);
 
-        frame.copyTo(gray);
-        cvtColor(gray, gray, COLOR_BGRA2GRAY);
-        
-        if (!prevgray.empty())
-        {
-            calcOpticalFlowFarneback(prevgray, gray, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
-            cvtColor(prevgray, cflow, COLOR_GRAY2BGR);
-            uflow.copyTo(flow);
-            drawOptFlowMap(flow, cflow, 8, 1.5, Scalar(0, 255, 0));
-            imshow("flow", cflow);
-        }
-        
-        std::swap(prevgray, gray);
-        
-        if (waitKey(30) >= 0) break;
-    }
-    return 0;
+void findMaxContours(Mat skin,Mat frame) {
+	int largest_area = 0;
+	int largest_contour_index = 0;
+	Rect bounding_rect;
+
+	threshold(skin, skin, 25, 255, THRESH_BINARY); //Threshold the gray
+
+	vector<vector<Point>> contours; // Vector for storing contour
+	vector<Vec4i> hierarchy;
+
+	findContours(skin, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE); // Find the contours in the image
+
+	for (int i = 0; i< contours.size(); i++) // iterate through each contour. 
+	{
+		double a = contourArea(contours[i], false);  //  Find the area of contour
+		if (a>largest_area) {
+			largest_area = a;
+			largest_contour_index = i;                //Store the index of largest contour
+			bounding_rect = boundingRect(contours[i]); // Find the bounding rectangle for biggest contour
+		}
+
+	}
+
+	Scalar color(255, 255, 255);
+	drawContours(skin, contours, largest_contour_index, color, CV_FILLED, 8, hierarchy); // Draw the largest contour using previously stored index.
+	rectangle(frame, bounding_rect, Scalar(0, 255, 0), 1, 8, 0);
+	imshow("src", frame);
+	imshow("largest Contour", skin);
+}
+
+
+int main() {
+	VideoCapture cap(0);
+	if (!cap.isOpened()) return -1;
+	namedWindow("Original", WINDOW_AUTOSIZE);
+	namedWindow("Skin", WINDOW_AUTOSIZE);
+	namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+												//Create trackbars in "Control" window
+	cvCreateTrackbar("LowY", "Control", &LY, 255);
+	cvCreateTrackbar("HighY", "Control", &HY, 255);
+	cvCreateTrackbar("LowCr", "Control", &LCr, 255);
+	cvCreateTrackbar("HighCr", "Control", &HCr, 255);
+	cvCreateTrackbar("LowCb", "Control", &LCb, 255);
+	cvCreateTrackbar("HighCb", "Control", &LCb, 255);
+
+	int now_row = 87;
+	int breath = 0;
+	bool change = false;
+	int row_max = 0;
+	int row_min = 8787;
+
+	Mat flow, cflow;
+	UMat gray, prevgray, uflow;
+	//namedWindow("flow", 1);
+
+	for (;;) {
+		Mat frame, skin;
+		cap >> frame;
+		flip(frame, frame, 1);
+		frame.copyTo(skin);
+		color(skin);
+
+		for (int row = frame.rows - 2; row >= 0; row--) {//NO FIRST
+			for (int col = frame.cols - 2; col >= 0; col--) {
+				int count = 0;
+				for (int k = col; k > col - long_max && col > long_max && k > 0; k--) {
+					if (color(skin.ptr<uchar>(row, k)[0])) {
+						if (!color(skin.ptr<uchar>(row + 1, col)[0])) break;
+						count++;
+					}
+					else break;
+				}
+				if (count == long_max) {
+					for (int lineLength = col; lineLength > col - lineLengthMax && col > lineLengthMax; lineLength--) {
+						for (int lineWidth = row; lineWidth < row + neck_find && lineWidth < frame.rows - 2; lineWidth++) {
+							if (!color(skin.ptr<uchar>(lineWidth + 1, lineLength)[0] && color(skin.ptr<uchar>(lineWidth, lineLength)[0]))) {
+								int lineTemp = lineWidthRange;
+								while (lineTemp--&&lineWidth + lineTemp < frame.rows - 5) {
+									frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[0] = 255;
+									frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[1] = 0;
+									frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[2] = 0;
+								}
+								break;
+							}
+						}
+					}
+					row_max = max(row_max, row);
+					row_min = min(row_min, row);
+					if (now_row != row) {
+						if (now_row > row ? !change : change) {
+							if (row_max - row_min > 5) {
+								breath++;
+								if (breath % 2)cout << "呼吸次數: " << breath / 2 << endl;
+							}
+							row_max = 0;
+							row_min = 8787;
+							change = now_row > row ? true : false;
+						}
+					}
+					else;//cout << "NO MOVE" << endl;
+					now_row = row;
+					goto imgshow;
+				}
+			}
+		}
+	imgshow:
+		findMaxContours(skin, frame);
+
+		if (waitKey(30) >= 0) break;
+	}
+	return 0;
 }
