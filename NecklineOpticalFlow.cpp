@@ -23,11 +23,13 @@ int HCb = 127;
 using namespace std;
 using namespace cv;
 
-static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step, double, const Scalar& color)
+static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step, double, const Scalar& color,Rect temp)
 {
-	for (int y = 0; y < cflowmap.rows; y += step)
-		for (int x = 0; x < cflowmap.cols; x += step)
+	//cout << temp.br().y <<" "<< temp.br().x<< endl;
+	for (int y = temp.tl().y; y < temp.br().y; y += step)
+		for (int x = temp.tl().x; x < temp.br().x; x += step)
 		{
+			//cout << x << " " << y << endl;
 			const Point2f& fxy = flow.at<Point2f>(y, x);
 			line(cflowmap, Point(x, y), Point(cvRound(x + fxy.x), cvRound(y + fxy.y)),
 				color);
@@ -47,7 +49,7 @@ bool color(double b) {
 	return b != 0;
 }
 
-Mat findMaxContours(Mat skin, Mat frame) {
+Mat findMaxContours(Mat skin, Mat frame,Rect &temp) {
 
 	int largest_area = 0;
 	int largest_contour_index = 0;
@@ -76,6 +78,8 @@ Mat findMaxContours(Mat skin, Mat frame) {
 	//drawContours(skin, contours, largest_contour_index, color, CV_FILLED, 8, hierarchy); // Draw the largest contour using previously stored index.
 	drawContours(black, contours, largest_contour_index, color, CV_FILLED, 8, hierarchy);
 	rectangle(frame, bounding_rect, Scalar(0, 255, 0), 1, 8, 0);
+	temp = bounding_rect;
+
 	imshow("src", frame);
 	//imshow("skin", skin);
 	imshow("largest Contour", black);
@@ -112,6 +116,7 @@ int main() {
 		flip(frame, frame, 1);
 		frame.copyTo(skin);
 		color(skin);
+		Rect temp;
 
 		for (int row = frame.rows - 2; row >= 0; row--) {//NO FIRST
 			for (int col = frame.cols - 2; col >= 0; col--) {
@@ -157,17 +162,16 @@ int main() {
 			}
 		}
 	imgshow:
-		skin=findMaxContours(skin, frame);
+		skin = findMaxContours(skin, frame, temp);
 
 		skin.copyTo(gray);
 
 		if (!prevgray.empty())
 		{
-			cout << 123 << endl;
 			calcOpticalFlowFarneback(prevgray, gray, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
 			cvtColor(prevgray, cflow, COLOR_GRAY2BGR);
 			uflow.copyTo(flow);
-			drawOptFlowMap(flow, cflow, 8, 1.5, Scalar(0, 255, 0));
+			drawOptFlowMap(flow, cflow, 8, 1.5, Scalar(0, 255, 0), temp);
 			imshow("flow", cflow);
 		}
 		swap(prevgray, gray);
