@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include<algorithm>
 #include "find_collar.hpp"
-
+//#include "opticalflow.hpp"
 using namespace std;
 
 static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step, double, const Scalar& color,Rect temp)
@@ -21,17 +21,16 @@ static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step, double, con
         }
 }
 
-Mat findMaxContours(Mat skin, Mat frame,Rect &temp) {
+Mat findMaxContours(Mat const skin, Mat frame,Rect &temp) {
     
     int largest_area = 0;
     int largest_contour_index = 0;
     Rect bounding_rect;
     
-    threshold(skin, skin, 25, 255, THRESH_BINARY); //Threshold the gray
+    //threshold(skin, skin, 25, 255, THRESH_BINARY); //Threshold the gray
     
     vector<vector<Point>> contours; // Vector for storing contour
     vector<Vec4i> hierarchy;
-    
     findContours(skin, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE); // Find the contours in the image
     
     for (int i = 0; i < contours.size(); i++) // iterate through each contour.
@@ -72,12 +71,12 @@ int main() {
         cap >> frame;
         flip(frame, frame, 1);
         frame.copyTo(skin);
-        skincolor(skin);
-        find_collar(frame, skin);
+        //skincolor(skin);
+        find_collar(skin);
         Rect temp;
         skin = findMaxContours(skin, frame, temp);
-        skin.copyTo(gray);
-        
+        frame.copyTo(gray);
+        cvtColor(gray, gray, COLOR_BGRA2GRAY);
         if (!prevgray.empty())
         {
             calcOpticalFlowFarneback(prevgray, gray, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);

@@ -31,7 +31,8 @@ void CreateTrackbar(){
     cvCreateTrackbar("HighCb", "Control", &LCb, 255);
 }
 
-void find_collar(Mat& frame,Mat& skin){
+void find_collar(Mat& frame){
+    Mat skin=skincolor(frame);
     int now_row = 87;
     int breath = 0;
     bool change = false;

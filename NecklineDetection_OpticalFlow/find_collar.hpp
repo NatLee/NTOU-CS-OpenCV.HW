@@ -15,6 +15,6 @@ using namespace std;
 Mat skincolor(Mat& );
 bool skincolor(double );
 void CreateTrackbar();
-void find_collar(Mat& ,Mat& );
+void find_collar(Mat& );
 
 #endif /* find_collar_hpp */
