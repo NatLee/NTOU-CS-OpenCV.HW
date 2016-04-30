@@ -11,8 +11,9 @@ int HCb = 127;
 
 int collarPos[2] = { 0,0 };
 void setCollarPos(int x, int y) {
-	collarPos[0] = x;
-	collarPos[1] = y;
+	
+	collarPos[0] = x < 0 ? 0 : x;
+	collarPos[1] = y < 0 ? 0 : y;
 }
 
 
@@ -67,22 +68,19 @@ void find_collar(Mat& frame) {
 								frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[1] = 0;
 								frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[2] = 0;
 							}
-							if (lineWidth == frame.rows - 3) {
-								setCollarPos(lineLength, lineWidth / 2);
-								cout << collarPos[0] << "   " << collarPos[1] << endl;
-							}
+							setCollarPos(lineLength - lineWidthRange / 2, lineWidth);
+							cout << collarPos[0] << "   " << collarPos[1] << endl;
 							break;
 						}
 					}
 				}
-
 				row_max = max(row_max, row);
 				row_min = min(row_min, row);
 				if (now_row != row) {
 					if (now_row > row ? !change : change) {
 						if (row_max - row_min > 5) {
 							breath++;
-							if (breath % 2)cout << "å‘¼å¸æ¬¡æ•¸: " << breath / 2 << endl;
+							if (breath % 2)cout << "©I§l¦¸¼Æ: " << breath / 2 << endl;
 						}
 						row_max = 0;
 						row_min = 8787;
