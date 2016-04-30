@@ -47,7 +47,8 @@ bool color(double b) {
 	return b != 0;
 }
 
-void findMaxContours(Mat skin,Mat frame) {
+Mat findMaxContours(Mat skin, Mat frame) {
+
 	int largest_area = 0;
 	int largest_contour_index = 0;
 	Rect bounding_rect;
@@ -59,10 +60,10 @@ void findMaxContours(Mat skin,Mat frame) {
 
 	findContours(skin, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE); // Find the contours in the image
 
-	for (int i = 0; i< contours.size(); i++) // iterate through each contour. 
+	for (int i = 0; i < contours.size(); i++) // iterate through each contour. 
 	{
 		double a = contourArea(contours[i], false);  //  Find the area of contour
-		if (a>largest_area) {
+		if (a > largest_area) {
 			largest_area = a;
 			largest_contour_index = i;                //Store the index of largest contour
 			bounding_rect = boundingRect(contours[i]); // Find the bounding rectangle for biggest contour
@@ -72,12 +73,13 @@ void findMaxContours(Mat skin,Mat frame) {
 	Mat black(skin.rows, skin.cols, CV_8UC1, Scalar::all(0));//bulid black Mat
 
 	Scalar color(255, 255, 255);
-	drawContours(skin, contours, largest_contour_index, color, CV_FILLED, 8, hierarchy); // Draw the largest contour using previously stored index.
+	//drawContours(skin, contours, largest_contour_index, color, CV_FILLED, 8, hierarchy); // Draw the largest contour using previously stored index.
 	drawContours(black, contours, largest_contour_index, color, CV_FILLED, 8, hierarchy);
 	rectangle(frame, bounding_rect, Scalar(0, 255, 0), 1, 8, 0);
 	imshow("src", frame);
-	imshow("skin", skin);
+	//imshow("skin", skin);
 	imshow("largest Contour", black);
+	return black;
 }
 
 
@@ -85,8 +87,8 @@ int main() {
 	VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;
 
-	namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
-												//Create trackbars in "Control" window
+	namedWindow("Control", CV_WINDOW_AUTOSIZE); 
+
 	cvCreateTrackbar("LowY", "Control", &LY, 255);
 	cvCreateTrackbar("HighY", "Control", &HY, 255);
 	cvCreateTrackbar("LowCr", "Control", &LCr, 255);
@@ -102,7 +104,7 @@ int main() {
 
 	Mat flow, cflow;
 	UMat gray, prevgray, uflow;
-	//namedWindow("flow", 1);
+	namedWindow("flow", 1);
 
 	for (;;) {
 		Mat frame, skin;
@@ -155,7 +157,20 @@ int main() {
 			}
 		}
 	imgshow:
-		findMaxContours(skin, frame);
+		skin=findMaxContours(skin, frame);
+
+		skin.copyTo(gray);
+
+		if (!prevgray.empty())
+		{
+			cout << 123 << endl;
+			calcOpticalFlowFarneback(prevgray, gray, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
+			cvtColor(prevgray, cflow, COLOR_GRAY2BGR);
+			uflow.copyTo(flow);
+			drawOptFlowMap(flow, cflow, 8, 1.5, Scalar(0, 255, 0));
+			imshow("flow", cflow);
+		}
+		swap(prevgray, gray);
 
 		if (waitKey(30) >= 0) break;
 	}
