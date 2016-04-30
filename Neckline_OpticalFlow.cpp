@@ -20,8 +20,7 @@ using namespace std;
 
 #define UNKNOWN_FLOW_THRESH 1e9
 
-static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step,
-                           double, const Scalar& color)
+static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step,double, const Scalar& color)
 {
     for (int y = 0; y < cflowmap.rows; y += step)
         for (int x = 0; x < cflowmap.cols; x += step)
@@ -55,7 +54,6 @@ void contourFilter(Mat image)
     RNG rng(12345);
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
-    
     findContours(image, contours, hierarchy,
                  CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
     //在threshold_img影像中尋找所有的輪廓
@@ -131,15 +129,15 @@ int main()
         color(image);
         contourFilter(image);
 
-        
-        image.copyTo(gray);
+        frame.copyTo(gray);
+        cvtColor(gray, gray, COLOR_BGRA2GRAY);
         
         if (!prevgray.empty())
         {
             calcOpticalFlowFarneback(prevgray, gray, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
             cvtColor(prevgray, cflow, COLOR_GRAY2BGR);
             uflow.copyTo(flow);
-            drawOptFlowMap(flow, cflow, 16, 1.5, Scalar(0, 255, 0));
+            drawOptFlowMap(flow, cflow, 8, 1.5, Scalar(0, 255, 0));
             imshow("flow", cflow);
         }
         
