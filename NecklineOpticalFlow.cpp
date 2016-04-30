@@ -69,20 +69,22 @@ void findMaxContours(Mat skin,Mat frame) {
 		}
 
 	}
+	Mat black(skin.rows, skin.cols, CV_8UC1, Scalar::all(0));//bulid black Mat
 
 	Scalar color(255, 255, 255);
 	drawContours(skin, contours, largest_contour_index, color, CV_FILLED, 8, hierarchy); // Draw the largest contour using previously stored index.
+	drawContours(black, contours, largest_contour_index, color, CV_FILLED, 8, hierarchy);
 	rectangle(frame, bounding_rect, Scalar(0, 255, 0), 1, 8, 0);
 	imshow("src", frame);
-	imshow("largest Contour", skin);
+	imshow("skin", skin);
+	imshow("largest Contour", black);
 }
 
 
 int main() {
 	VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;
-	namedWindow("Original", WINDOW_AUTOSIZE);
-	namedWindow("Skin", WINDOW_AUTOSIZE);
+
 	namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
 												//Create trackbars in "Control" window
 	cvCreateTrackbar("LowY", "Control", &LY, 255);
