@@ -9,15 +9,21 @@ int HCr = 177;
 int LCb = 77;
 int HCb = 127;
 
+int now_row = 87;
+int breath = 0;
+bool change = false;
+int row_max = 0;
+int row_min = 8787;
+
 int collarPos[2] = { 0,0 };
 void setCollarPos(int x, int y) {
-	
 	collarPos[0] = x < 0 ? 0 : x;
 	collarPos[1] = y < 0 ? 0 : y;
 }
 
-
-
+int *getCollarPos() {
+	return collarPos;
+}
 
 Mat skincolor(Mat& src) {
 	cvtColor(src, src, cv::COLOR_BGR2YCrCb);
@@ -32,7 +38,7 @@ bool skincolor(double b) {
 }
 
 void CreateTrackbar() {
-	namedWindow("Control", CV_WINDOW_NORMAL);
+	namedWindow("Control", CV_WINDOW_AUTOSIZE);
 	cvCreateTrackbar("LowY", "Control", &LY, 255);
 	cvCreateTrackbar("HighY", "Control", &HY, 255);
 	cvCreateTrackbar("LowCr", "Control", &LCr, 255);
@@ -43,11 +49,6 @@ void CreateTrackbar() {
 
 void find_collar(Mat& frame) {
 	Mat skin = skincolor(frame);
-	int now_row = 87;
-	int breath = 0;
-	bool change = false;
-	int row_max = 0;
-	int row_min = 8787;
 	for (int row = frame.rows - 2; row >= 0; row--) {//NO FIRST
 		for (int col = frame.cols - 2; col >= 0; col--) {
 			int count = 0;
@@ -68,26 +69,18 @@ void find_collar(Mat& frame) {
 								frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[1] = 0;
 								frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[2] = 0;
 							}
-							setCollarPos(lineLength - lineWidthRange / 2, lineWidth);
-							cout << collarPos[0] << "   " << collarPos[1] << endl;
-							break;
+							setCollarPos(lineLength- lineLengthMax/2, lineWidth);
+							goto out;
 						}
 					}
 				}
+			out:
 				row_max = max(row_max, row);
 				row_min = min(row_min, row);
-				if (now_row != row) {
-					if (now_row > row ? !change : change) {
-						if (row_max - row_min > 5) {
-							breath++;
-							if (breath % 2)cout << "呼吸次數: " << breath / 2 << endl;
-						}
-						row_max = 0;
-						row_min = 8787;
-						change = now_row > row ? true : false;
-					}
-				}
-				else;//cout << "NO MOVE" << endl;
+				if (now_row > row + 7)
+					printf("向上移動\n");
+				else if (now_row < row - 7)
+					printf("向下移動\n");
 				now_row = row;
 				return;
 			}

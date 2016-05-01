@@ -8,17 +8,16 @@
 //#include "opticalflow.hpp"
 using namespace std;
 
+
 static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step, double, const Scalar& color, Rect temp)
 {
-	//cout << temp.br().y <<" "<< temp.br().x<< endl;
-	for (int y = temp.tl().y; y < temp.br().y; y += step)
-		for (int x = temp.tl().x; x < temp.br().x; x += step)
-		{
-			//cout << x << " " << y << endl;
+	for (int y = getCollarPos()[1] - NeckRange; y < getCollarPos()[1] + NeckRange && y < cflowmap.rows&&y>0; y += step) {
+		for (int x = getCollarPos()[0] - NeckRange; x < getCollarPos()[0] + NeckRange && x < cflowmap.cols&&x>0; x += step){
 			const Point2f& fxy = flow.at<Point2f>(y, x);
 			line(cflowmap, Point(x, y), Point(cvRound(x + fxy.x), cvRound(y + fxy.y)), color);
 			circle(cflowmap, Point(x, y), 2, color, -1);
 		}
+	}
 }
 
 Mat findMaxContours(Mat const skin, Mat frame, Rect &temp) {
@@ -77,8 +76,7 @@ int main() {
 		skin = findMaxContours(skin, frame, temp);
 		frame.copyTo(gray);
 		cvtColor(gray, gray, COLOR_BGRA2GRAY);
-		if (!prevgray.empty())
-		{
+		if (!prevgray.empty()){
 			calcOpticalFlowFarneback(prevgray, gray, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
 			cvtColor(prevgray, cflow, COLOR_GRAY2BGR);
 			uflow.copyTo(flow);

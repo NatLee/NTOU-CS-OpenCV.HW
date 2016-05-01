@@ -5,6 +5,7 @@
 #define lineLengthMax 130
 #define lineWidthRange 5
 #define neck_find 50
+#define NeckRange 50
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include <iostream>
@@ -16,5 +17,6 @@ Mat skincolor(Mat&);
 bool skincolor(double);
 void CreateTrackbar();
 void find_collar(Mat&);
+int *getCollarPos();
 
 #endif /* find_collar_hpp */
