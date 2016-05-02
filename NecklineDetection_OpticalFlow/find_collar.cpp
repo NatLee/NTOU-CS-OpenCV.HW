@@ -63,13 +63,13 @@ void find_collar(Mat& frame) {
 				for (int lineLength = col; lineLength > col - lineLengthMax && col > lineLengthMax; lineLength--) {
 					for (int lineWidth = row; lineWidth < row + neck_find && lineWidth < frame.rows - 2; lineWidth++) {
 						if (!skincolor(skin.ptr<uchar>(lineWidth + 1, lineLength)[0] && skincolor(skin.ptr<uchar>(lineWidth, lineLength)[0]))) {
-							int lineTemp = lineWidthRange;
+							/*int lineTemp = lineWidthRange;  //Drawing the blue neckline at the image 
 							while (lineTemp--&&lineWidth + lineTemp < frame.rows - 5) {
 								frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[0] = 255;
 								frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[1] = 0;
 								frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[2] = 0;
-							}
-							setCollarPos(lineLength- lineLengthMax/2, lineWidth);
+							}*/
+							setCollarPos(lineLength- lineLengthMax/2, lineWidth);//set the 
 							goto out;
 						}
 					}

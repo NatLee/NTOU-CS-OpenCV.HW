@@ -9,13 +9,16 @@
 using namespace std;
 
 
-static void drawOptFlowMap(const Mat& flow, Mat& cflowmap, int step, double, const Scalar& color, Rect temp)
+static void drawOptFlowMap(Mat skin, const Mat& flow, Mat& cflowmap, int step, double, const Scalar& color, Rect temp)
 {
-	for (int y = getCollarPos()[1] - NeckRange; y < getCollarPos()[1] + NeckRange && y < cflowmap.rows&&y>0; y += step) {
-		for (int x = getCollarPos()[0] - NeckRange; x < getCollarPos()[0] + NeckRange && x < cflowmap.cols&&x>0; x += step){
-			const Point2f& fxy = flow.at<Point2f>(y, x);
-			line(cflowmap, Point(x, y), Point(cvRound(x + fxy.x), cvRound(y + fxy.y)), color);
-			circle(cflowmap, Point(x, y), 2, color, -1);
+	for (int x = getCollarPos()[0] - NeckRange; x < getCollarPos()[0] + NeckRange && x < cflowmap.cols - 2 && x>0; x += step) {
+		for (int y = getCollarPos()[1]; y < getCollarPos()[1] + neck_find && y < cflowmap.rows - 2 && y>0; y += step) {
+			if (!skincolor(skin.ptr<uchar>(y + 1, x)[0] && skincolor(skin.ptr<uchar>(y, x)[0]))) {
+				const Point2f& fxy = flow.at<Point2f>(y, x);
+				line(cflowmap, Point(x, y), Point(cvRound(x + fxy.x), cvRound(y + fxy.y)), color);
+				circle(cflowmap, Point(x, y), 2, color, -1);
+				break;
+			}
 		}
 	}
 }
@@ -50,8 +53,8 @@ Mat findMaxContours(Mat const skin, Mat frame, Rect &temp) {
 	rectangle(frame, bounding_rect, Scalar(0, 255, 0), 1, 8, 0);
 	temp = bounding_rect;
 
-	imshow("src", frame);
-	imshow("largest Contour", black);
+	imshow("src", frame);//source image
+	imshow("largest Contour", black);// Largest Contour
 	return black;
 }
 
@@ -76,15 +79,14 @@ int main() {
 		skin = findMaxContours(skin, frame, temp);
 		frame.copyTo(gray);
 		cvtColor(gray, gray, COLOR_BGRA2GRAY);
-		if (!prevgray.empty()){
+		if (!prevgray.empty()) {
 			calcOpticalFlowFarneback(prevgray, gray, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
 			cvtColor(prevgray, cflow, COLOR_GRAY2BGR);
 			uflow.copyTo(flow);
-			drawOptFlowMap(flow, cflow, 8, 1.5, Scalar(0, 255, 0), temp);
+			drawOptFlowMap(skin, flow, cflow, 8, 1.5, Scalar(0, 255, 0), temp);
 			imshow("flow", cflow);
 		}
 		swap(prevgray, gray);
-
 		if (waitKey(30) >= 0) break;
 	}
 	return 0;
