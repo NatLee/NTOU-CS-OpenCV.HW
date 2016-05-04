@@ -1,4 +1,8 @@
 ﻿#include "skin_color.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+
+#include <time.h>
 
 Mat findMaxContours(Mat skin, Mat frame, Rect &temp) {
 
@@ -67,7 +71,7 @@ int main() {
 			if (!t) {
 				Heartbeat++;
 				time = clock();
-				cout << "heartbeats:" << Heartbeat / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
+				cout << "heartbeats:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
 				t = !t;
 			}
 		}
@@ -75,7 +79,7 @@ int main() {
 			if (t) {
 				Heartbeat++;
 				time = clock();
-				cout << "heartbeats:" << Heartbeat / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
+				cout << "heartbeats:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
 				t = !t;
 			}
 		}
