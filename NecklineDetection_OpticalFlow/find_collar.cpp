@@ -28,8 +28,8 @@ int *getCollarPos() {
 Mat skincolor(Mat& src) {
 	cvtColor(src, src, cv::COLOR_BGR2YCrCb);
 	inRange(src, Scalar(LY, LCr, LCb), Scalar(HY, HCr, HCb), src);
-	erode(src, src, Mat(), Point(-1, -1), 3);
-	dilate(src, src, Mat(), Point(-1, -1), 3);
+	erode(src, src, Mat(), Point(-1, -1), 2);
+	dilate(src, src, Mat(), Point(-1, -1), 2);
 	return src;
 }
 
@@ -48,7 +48,8 @@ void CreateTrackbar() {
 }
 
 void find_collar(Mat& frame) {
-	Mat skin = skincolor(frame);
+    Mat skin ;//= skincolor(frame);
+    frame.copyTo(skin);
 	for (int row = frame.rows - 2; row >= 0; row--) {//NO FIRST
 		for (int col = frame.cols - 2; col >= 0; col--) {
 			int count = 0;
@@ -62,7 +63,7 @@ void find_collar(Mat& frame) {
 			if (count == long_max) {
 				for (int lineLength = col; lineLength > col - lineLengthMax && col > lineLengthMax; lineLength--) {
 					for (int lineWidth = row; lineWidth < row + neck_find && lineWidth < frame.rows - 2; lineWidth++) {
-						if (!skincolor(skin.ptr<uchar>(lineWidth + 1, lineLength)[0] && skincolor(skin.ptr<uchar>(lineWidth, lineLength)[0]))) {
+						if (!skincolor(skin.ptr<uchar>(lineWidth + 1, lineLength)[0]) && skincolor(skin.ptr<uchar>(lineWidth, lineLength)[0])) {
 							/*int lineTemp = lineWidthRange;  //Drawing the blue neckline at the image 
 							while (lineTemp--&&lineWidth + lineTemp < frame.rows - 5) {
 								frame.ptr<uchar>(lineWidth + lineTemp, lineLength)[0] = 255;
@@ -78,9 +79,9 @@ void find_collar(Mat& frame) {
 				row_max = max(row_max, row);
 				row_min = min(row_min, row);
 				if (now_row > row + 7)
-					printf("向上移動\n");
+					printf("up\n");
 				else if (now_row < row - 7)
-					printf("向下移動\n");
+					printf("down\n");
 				now_row = row;
 				return;
 			}

@@ -1,5 +1,7 @@
 ﻿#include "opencv2/video/tracking.hpp"
 #include "opencv2/videoio/videoio.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
 
 #include <iostream>
 #include <ctype.h>
@@ -72,18 +74,23 @@ int main() {
 		Mat frame, skin;
 		cap >> frame;
 		flip(frame, frame, 1);
+        resize(frame, frame, Size(frame.cols / 2, frame.rows / 2));
 		frame.copyTo(skin);
 		//skincolor(skin);
+        Rect temp;
+        
+        skincolor(skin);
+        skin = findMaxContours(skin, frame, temp);
 		find_collar(skin);
-		Rect temp;
-		skin = findMaxContours(skin, frame, temp);
+
+		//skin = findMaxContours(skin, frame, temp);
 		frame.copyTo(gray);
 		cvtColor(gray, gray, COLOR_BGRA2GRAY);
 		if (!prevgray.empty()) {
 			calcOpticalFlowFarneback(prevgray, gray, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
 			cvtColor(prevgray, cflow, COLOR_GRAY2BGR);
 			uflow.copyTo(flow);
-			drawOptFlowMap(skin, flow, cflow, 8, 1.5, Scalar(0, 255, 0), temp);
+			drawOptFlowMap(skin, flow, cflow, 2, 1.5, Scalar(0, 255, 0), temp);
 			imshow("flow", cflow);
 		}
 		swap(prevgray, gray);

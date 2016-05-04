@@ -2,10 +2,10 @@
 #define find_collar_hpp
 
 #define long_max 120
-#define lineLengthMax 130
+#define lineLengthMax 120
 #define lineWidthRange 5
 #define neck_find 50
-#define NeckRange 70
+#define NeckRange 50
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include <iostream>
