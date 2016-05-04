@@ -22,8 +22,8 @@ Mat findMaxContours(Mat skin, Mat frame, Rect &temp) {
 	drawContours(black, contours, largest_contour_index, Scalar(255, 255, 255), CV_FILLED, 8, hierarchy);
 	temp.x = temp.x + (temp.width / 4);
 	temp.y = temp.y + (temp.height / 4);
-	temp.width = temp.width/2;
-	temp.height = temp.height/2;
+	temp.width = temp.width / 2;
+	temp.height = temp.height / 2;
 	rectangle(frame, temp, Scalar(0, 255, 0), 1, 8, 0);
 	imshow("src", frame);//source image
 	imshow("largest Contour", black);// Largest Contour
@@ -32,7 +32,7 @@ Mat findMaxContours(Mat skin, Mat frame, Rect &temp) {
 }
 
 int main() {
-    clock_t time;
+	clock_t time;
 	VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;
 	bool t = true;
@@ -66,23 +66,26 @@ int main() {
 		if (red_avg - red_thres > pre_red_avg) {
 			if (!t) {
 				Heartbeat++;
+				time = clock();
+				cout << "heartbeats:" << Heartbeat / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
 				t = !t;
 			}
 		}
 		else if (red_avg + red_thres < pre_red_avg) {
 			if (t) {
 				Heartbeat++;
+				time = clock();
+				cout << "heartbeats:" << Heartbeat / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
 				t = !t;
 			}
 		}
-		if (Heartbeat) {
-			time = clock();
-            //cout<<Heartbeat;
-            //cout<<"heartbeat"<<Heartbeat<<"\nt2"<<t2/(double)(CLOCKS_PER_SEC)<<"\nt1"<<t1/(double)(CLOCKS_PER_SEC)<<endl;
-            cout<<"heartbeats:"<<Heartbeat/(time/(double)(CLOCKS_PER_SEC))*60<<endl;
-			//t1 = t2;
-			Heartbeat = 0;
-		}
+		//if (Heartbeat) {
+		//	time = clock();
+		//	//cout<<Heartbeat;
+		//	//cout<<"heartbeat"<<Heartbeat<<"\nt2"<<t2/(double)(CLOCKS_PER_SEC)<<"\nt1"<<t1/(double)(CLOCKS_PER_SEC)<<endl;
+		//	//cout << "heartbeats:" << Heartbeat / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
+		//	//t1 = t2;
+		//}
 		pre_red_avg = red_avg;
 		if (waitKey(30) >= 0) break;
 	}

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <time.h>
 
-#define red_thres 2.5
+#define red_thres 2.4
 #define find_place 50
 using namespace cv;
 using namespace std;
