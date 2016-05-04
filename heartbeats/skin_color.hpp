@@ -1,19 +1,16 @@
-//
-//  skin_color.hpp
-//  opencvtest
-//
-//  Created by 張語航 on 2016/5/3.
-//  Copyright © 2016年 張語航. All rights reserved.
-//
-
-#ifndef skin_color_hpp
+﻿#ifndef skin_color_hpp
 #define skin_color_hpp
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include <iostream>
+#include <windows.h>
+#include <time.h>
+
+#define red_thres 2.5
+#define find_place 50
 using namespace cv;
 using namespace std;
 
 Mat skincolor(const Mat&);
 void CreateTrackbar();
-#endif /* skin_color_hpp */
+#endif
