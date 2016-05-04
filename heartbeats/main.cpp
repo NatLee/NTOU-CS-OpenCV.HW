@@ -1,4 +1,5 @@
 ﻿#include "skin_color.hpp"
+
 Mat findMaxContours(Mat skin, Mat frame, Rect &temp) {
 
 	int largest_area = 0;
@@ -6,7 +7,7 @@ Mat findMaxContours(Mat skin, Mat frame, Rect &temp) {
 
 	vector<vector<Point>> contours; // Vector for storing contour
 	vector<Vec4i> hierarchy;
-	findContours(skin, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE); // Find the contours in the image
+	findContours(skin, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE); // Find the contours in the images
 
 	for (int i = 0; i < contours.size(); i++) // iterate through each contour.
 	{
@@ -31,14 +32,14 @@ Mat findMaxContours(Mat skin, Mat frame, Rect &temp) {
 }
 
 int main() {
+    clock_t time;
 	VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;
-	CreateTrackbar();
 	bool t = true;
 	int Heartbeat = 0;
 	double red_avg = 0, pre_red_avg = 0;
-	DWORD t1, t2;
-	t1 = GetTickCount();
+
+
 	for (;;) {
 		Mat frame, skin;
 		cap >> frame;
@@ -62,7 +63,6 @@ int main() {
 		red_avg = red_total / passthru;
 		if (pre_red_avg == 0)
 			pre_red_avg = red_avg;
-		//printf("%f  %f\n", red_avg1, red_avg);
 		if (red_avg - red_thres > pre_red_avg) {
 			if (!t) {
 				Heartbeat++;
@@ -76,9 +76,11 @@ int main() {
 			}
 		}
 		if (Heartbeat) {
-			t2 = GetTickCount();
-			printf("可能的心跳頻率:%.0lf\n", double(double(Heartbeat) / (0.001*(t2 - t1))) * 60);
-			t1 = t2;
+			time = clock();
+            //cout<<Heartbeat;
+            //cout<<"heartbeat"<<Heartbeat<<"\nt2"<<t2/(double)(CLOCKS_PER_SEC)<<"\nt1"<<t1/(double)(CLOCKS_PER_SEC)<<endl;
+            cout<<"heartbeats:"<<Heartbeat/(time/(double)(CLOCKS_PER_SEC))*60<<endl;
+			//t1 = t2;
 			Heartbeat = 0;
 		}
 		pre_red_avg = red_avg;
