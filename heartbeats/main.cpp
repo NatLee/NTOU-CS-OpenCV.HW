@@ -1,7 +1,7 @@
 ﻿#include "skin_color.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
-
+#include "iomanip"
 #include <time.h>
 
 Mat findMaxContours(Mat skin, Mat frame, Rect &temp) {
@@ -48,6 +48,7 @@ int main() {
 		Mat frame, skin;
 		cap >> frame;
 		flip(frame, frame, 1);
+        //resize(frame, frame, Size(frame.cols/2,frame.rows/2));
 		skin = skincolor(frame);
 
 		Rect temp;
@@ -67,11 +68,13 @@ int main() {
 		red_avg = red_total / passthru;
 		if (pre_red_avg == 0)
 			pre_red_avg = red_avg;
+        cout << fixed  <<  setprecision(3);
 		if (red_avg - red_thres > pre_red_avg) {
 			if (!t) {
 				Heartbeat++;
 				time = clock();
-				cout << "heartbeats:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
+                cout<<Heartbeat/2<<endl;
+				cout << "心跳:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 <<"每分鐘"<< endl;
 				t = !t;
 			}
 		}
@@ -79,17 +82,11 @@ int main() {
 			if (t) {
 				Heartbeat++;
 				time = clock();
-				cout << "heartbeats:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
+                cout<<Heartbeat/2<<endl;
+				cout << "心跳:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 <<"每分鐘"<< endl;
 				t = !t;
 			}
 		}
-		//if (Heartbeat) {
-		//	time = clock();
-		//	//cout<<Heartbeat;
-		//	//cout<<"heartbeat"<<Heartbeat<<"\nt2"<<t2/(double)(CLOCKS_PER_SEC)<<"\nt1"<<t1/(double)(CLOCKS_PER_SEC)<<endl;
-		//	//cout << "heartbeats:" << Heartbeat / (time / (double)(CLOCKS_PER_SEC)) * 60 << endl;
-		//	//t1 = t2;
-		//}
 		pre_red_avg = red_avg;
 		if (waitKey(30) >= 0) break;
 	}

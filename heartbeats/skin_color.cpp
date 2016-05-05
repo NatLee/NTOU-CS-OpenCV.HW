@@ -19,7 +19,7 @@ Mat skincolor(const Mat& src) {
 	cvCreateTrackbar("HighCb", "Control", &LCb, 255);
 
 	Mat dst;
-	cvtColor(src, dst, cv::COLOR_BGR2YCrCb);
+	cvtColor(src, dst, COLOR_BGR2YCrCb);
 	inRange(dst, Scalar(LY, LCr, LCb), Scalar(HY, HCr, HCb), dst);
 	erode(dst, dst, Mat(), Point(-1, -1), 2);
 	dilate(dst, dst, Mat(), Point(-1, -1), 2);
