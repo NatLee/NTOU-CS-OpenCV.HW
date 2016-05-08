@@ -25,16 +25,23 @@ Mat findMaxContours(Mat skin, Mat frame, Rect &temp) {
 	temp.width = temp.width / 2;
 	temp.height = temp.height / 2;
 	rectangle(frame, temp, Scalar(0, 255, 0), 1, 8, 0);
-	imshow("src", frame);//source image
-	imshow("largest Contour", black);// Largest Contour
+	//imshow("src", frame);//source image
+	//imshow("largest Contour", black);// Largest Contour
 	skin = black;
 	return black;
 }
 
 
-double heartBeat(VideoCapture cap, clock_t &time, bool &t, int &Heartbeat, double &red_avg, double &pre_red_avg) {
+double heartBeat(VideoCapture cap) {
 	Mat frame, skin;
 	cap >> frame;
+	static clock_t time;
+	static bool t = true;
+	static int Heartbeat = 0;
+	static double red_avg = 0, pre_red_avg = 0;
+	CvFont font = cvFont(1, 2);
+	Scalar font_color = Scalar(0, 0, 255);
+	CvPoint point = cvPoint(20, 20);
 	flip(frame, frame, 1);
 	//resize(frame, frame, Size(frame.cols/2,frame.rows/2));
 	skin = skincolor(frame);
@@ -80,18 +87,23 @@ double heartBeat(VideoCapture cap, clock_t &time, bool &t, int &Heartbeat, doubl
 		}
 	}
 	pre_red_avg = red_avg;
+	char out1[100] = "HeartBeat time:", buffer[20] = "";
+	sprintf(buffer, "%.2lf ", (Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60));
+	strcat(out1, buffer);
+	sprintf(buffer, "per minutes");
+	strcat(out1, buffer);
+	putText(frame, out1, point, FONT_HERSHEY_COMPLEX, 0.7, font_color);
+	imshow("src", frame);
 	return (Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60);
 }
 
 int main() {
-	clock_t time;
 	VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;
-	bool t = true;
-	int Heartbeat = 0;
-	double red_avg = 0, pre_red_avg = 0;
+	
 	for (;;) {
-		printf("%.2lf\n", heartBeat(cap, time, t, Heartbeat, red_avg, pre_red_avg));
+		heartBeat(cap);
+		//printf("HeartBeat: %.2lf time per minutes\n", heartBeat(cap));
 		if (waitKey(30) >= 0) break;
 	}
 	return 0;
