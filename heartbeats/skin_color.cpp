@@ -21,7 +21,7 @@ Mat skincolor(const Mat& src) {
 	Mat dst;
 	cvtColor(src, dst, COLOR_BGR2YCrCb);
 	inRange(dst, Scalar(LY, LCr, LCb), Scalar(HY, HCr, HCb), dst);
-	erode(dst, dst, Mat(), Point(-1, -1), 2);
-	dilate(dst, dst, Mat(), Point(-1, -1), 2);
+	//erode(dst, dst, Mat(), Point(-1, -1), 2);
+	//dilate(dst, dst, Mat(), Point(-1, -1), 2);
 	return dst;
 }

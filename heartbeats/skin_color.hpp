@@ -6,8 +6,7 @@
 #include "iomanip"
 #include <time.h>
 
-#define red_thres 0
-#define find_place 50
+
 using namespace cv;
 using namespace std;
 
