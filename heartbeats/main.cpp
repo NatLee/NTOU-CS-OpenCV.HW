@@ -1,4 +1,4 @@
-﻿#include "skin_color.hpp"
+#include "skin_color.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "iomanip"
@@ -35,6 +35,62 @@ Mat findMaxContours(Mat skin, Mat frame, Rect &temp) {
 	return black;
 }
 
+
+double heartBeat(VideoCapture cap,clock_t time,bool t,int Heartbeat, double red_avg,double pre_red_avg) {
+	Mat frame, skin;
+	cap >> frame;
+	flip(frame, frame, 1);
+	//resize(frame, frame, Size(frame.cols/2,frame.rows/2));
+	skin = skincolor(frame);
+
+	Rect temp;
+	skin = findMaxContours(skin, frame, temp);
+	imshow("skin", skin);
+
+	///////////////////
+	double real_heartbeat=0; //每分鐘心跳
+	///////////////////
+	double red_total = 0.0, passthru = 0.0;
+	for (int i = temp.y; i < temp.y + temp.height; i++) {
+		for (int j = temp.x; j < temp.x + temp.width; j++) {
+			if (skin.ptr<uchar>(i, j)[0] == 255) {//if it's Skin do the process of adding red_scale for averaging
+				red_total += (int)frame.ptr<uchar>(i, j)[2];
+				passthru++;
+			}
+		}
+	}
+	red_avg = red_total / passthru;
+	if (pre_red_avg == 0)
+		pre_red_avg = red_avg;
+	cout << fixed << setprecision(3);
+	if (red_avg - red_thres > pre_red_avg) {
+		if (!t) {
+			Heartbeat++;
+			time = clock();
+			//cout << Heartbeat / 2 << endl;
+			real_heartbeat = Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60;
+			//cout << "心跳:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << "每分鐘" << endl;
+			t = !t;
+		}
+	}
+	else if (red_avg + red_thres < pre_red_avg) {
+		if (t) {
+			Heartbeat++;
+			time = clock();
+			//cout << Heartbeat / 2 << endl;
+			real_heartbeat = Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60;
+			//cout << "心跳:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 << "每分鐘" << endl;
+			t = !t;
+		}
+	}
+	pre_red_avg = red_avg;
+	return real_heartbeat;
+}
+
+
+
+
+
 int main() {
 	clock_t time;
 	VideoCapture cap(0);
@@ -45,49 +101,7 @@ int main() {
 
 
 	for (;;) {
-		Mat frame, skin;
-		cap >> frame;
-		flip(frame, frame, 1);
-        //resize(frame, frame, Size(frame.cols/2,frame.rows/2));
-		skin = skincolor(frame);
-
-		Rect temp;
-		skin = findMaxContours(skin, frame, temp);
-		imshow("skin", skin);
-
-
-		double red_total = 0.0, passthru = 0.0;
-		for (int i = temp.y; i < temp.y + temp.height; i++) {
-			for (int j = temp.x; j < temp.x + temp.width; j++) {
-				if (skin.ptr<uchar>(i, j)[0] == 255) {//if it's Skin do the process of adding red_scale for averaging
-					red_total += (int)frame.ptr<uchar>(i, j)[2];
-					passthru++;
-				}
-			}
-		}
-		red_avg = red_total / passthru;
-		if (pre_red_avg == 0)
-			pre_red_avg = red_avg;
-        cout << fixed  <<  setprecision(3);
-		if (red_avg - red_thres > pre_red_avg) {
-			if (!t) {
-				Heartbeat++;
-				time = clock();
-                cout<<Heartbeat/2<<endl;
-				cout << "心跳:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 <<"每分鐘"<< endl;
-				t = !t;
-			}
-		}
-		else if (red_avg + red_thres < pre_red_avg) {
-			if (t) {
-				Heartbeat++;
-				time = clock();
-                cout<<Heartbeat/2<<endl;
-				cout << "心跳:" << Heartbeat / 2 / (time / (double)(CLOCKS_PER_SEC)) * 60 <<"每分鐘"<< endl;
-				t = !t;
-			}
-		}
-		pre_red_avg = red_avg;
+		heartBeat(cap, time, t, Heartbeat, red_avg, pre_red_avg);
 		if (waitKey(30) >= 0) break;
 	}
 	return 0;
