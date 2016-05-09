@@ -10,6 +10,10 @@
 using namespace cv;
 using namespace std;
 
+void CreatSkinColorTrackbar();
+
 Mat skincolor(const Mat&);
+
+
 //double heartBeat(VideoCapture , clock_t &, bool &, int &, double &, double &)
 #endif
