@@ -24,9 +24,11 @@ int main(int argc, const char** argv)
 		frame.copyTo(black);
 		black = skincolor(black);//change the image to black or white
 		detectAndDisplay(frame, faces);//detection face
-		heartBeat(black, frame, faces);
+		if (faces.size() == 1)
+			heartBeat(black, frame, faces);
 		imshow("black", black);
-		cout << faces.size() << endl;
+		imshow(window_name, frame);
+
 		if ((char)waitKey(1) == 27)//Press Esc stop the program
 			break;
 	}
@@ -45,9 +47,9 @@ void detectAndDisplay(Mat frame, vector<Rect> &faces)
 	for (int i = 0; i < faces.size(); i++) {
 		Point center(faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5);
 		ellipse(frame, center, Size(faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar(0, 255, 0), 2, 8, 0);
-
+		//cout << faces[i] << endl;
 		Mat faceROI = frame_gray(faces[i]);
 
 	}
-	imshow(window_name, frame);
+	//imshow(window_name, frame);
 }
