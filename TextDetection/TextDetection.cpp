@@ -26,6 +26,7 @@ long long int count_thres(Mat in1)
 
 static void on_trackbar(int, void *)
 {
+	cvtColor(src, src, COLOR_BGR2GRAY);
 	Mat bw = threshval < 128 ? (src < threshval) : (src > threshval);
 	Mat labelImage(src.size(), CV_32S);
 	int nLabels = connectedComponents(bw, labelImage, 8);
@@ -40,6 +41,7 @@ static void on_trackbar(int, void *)
 			int label = labelImage.at<int>(r, c);
 			Vec3b &pixel = dst.at<Vec3b>(r, c);
 			pixel = colors[label];
+			cout << dst.at<Vec3b>(r, c) << endl;
 		}
 	}
 	imshow("Connected Components", dst);
@@ -89,7 +91,6 @@ int main()
 		//		rectangle(input, temp, Scalar(255, 0, 0), 1, 8, 0);
 		//	}
 		//}
-		createTrackbar("Threshold", "Connected Components", &threshval, 255, on_trackbar);
 		on_trackbar(threshval, 0);
 
 		if (waitKey(30) >= 0) break;
