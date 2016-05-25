@@ -3,7 +3,6 @@
 int main() {
 	VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;
-	
 	for (;;) {
         Mat frame,skin;
         cap>>frame;

@@ -56,7 +56,7 @@ void heartBeat(Mat& skin,Mat& frame,Rect& temp) {
     }
 
     red_avg = red_total / passthru;
-
+    cout<<"red avg:"<<red_avg<<endl;
     if (pre_red_avg == 0)
         pre_red_avg = red_avg;
     //cout << fixed << setprecision(3);
