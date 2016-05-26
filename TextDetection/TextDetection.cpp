@@ -8,18 +8,17 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	string str;
 
 
-	cvtColor(src, src, COLOR_BGR2GRAY);
-
-    threshold(src, src, 125, 255, THRESH_BINARY_INV);
-    imshow("binary", src);
+	//cvtColor(input, input, COLOR_BGR2GRAY);
     
 	Mat labelImage(src.size(), CV_32S);
     
 	int nLabels = connectedComponents(src, labelImage, 8);
+    
 	std::vector<Vec3b> colors(nLabels);
 	colors[0] = Vec3b(0, 0, 0);//background
 	for (int label = 1; label < nLabels; ++label) {
-		colors[label] = Vec3b((255), (255), (255));
+        
+		colors[label] = Vec3b((label*3+50), (label*3+50), (label*3+50));
 	}
     
 	Mat dst(src.size(), CV_8UC3);//For connected component image
@@ -30,11 +29,12 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 			pixel = colors[label];
 		}
 	}
-
+    
 	Mat gray;//For gray image to do the findcontours
 	dst.copyTo(gray);
 	cvtColor(gray, gray, COLOR_BGR2GRAY);
-    //imshow("binary", gray);
+    threshold(gray, gray, 50, 255, THRESH_BINARY_INV);
+    imshow("binary", gray);
 
 	Rect temp;
 	vector<vector<Point>> contours; // Vector for storing contour
@@ -44,14 +44,14 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	for (int i = 0; i < contours.size(); i++) {
 		double area = contourArea(contours[i], false);
 		if (area >= 500 && area <= 1000) {//set the area,don't take if exceed the region
-			//int tlX = temp.tl().x - 2 < 0 ? temp.tl().x : temp.tl().x - 2;
-			//int tlY = temp.tl().y - 2 < 0 ? temp.tl().y : temp.tl().y - 2;
+			//int tlX = temp.tl().x - 2 < 0 ? 0 : input.tl().x - 2;
+			//int tlY = temp.tl().y - 2 < 0 ? 0 : input.tl().y - 2;
 			//int brX= temp.br().x + 2 > input.cols ? input.cols-2 : temp.br().x + 2;
 			//int brY = temp.br().y +2 > input.rows ? input.rows-2: temp.br().y + 2;
 			
 			temp = boundingRect(contours[i]);
 			
-			Mat roi  (dst, temp);
+			Mat roi  (gray, temp);
 			textHandler.charDecode(roi, str, confidence);
 			cout << "Character = " << str << ", Confidence = " << confidence << std::endl;
 			rectangle(dst, temp, Scalar(255, 0, 0), 1, 8, 0);
@@ -63,10 +63,12 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 void textDetection(Mat &input) {
 	Mat src;
 	input.copyTo(src);
-	cvtColor(input, input, COLOR_BGR2GRAY);
-
+	cvtColor(src, src, COLOR_BGR2GRAY);
+    
 	double maxVal = 255;
-	adaptiveThreshold(input, input, maxVal, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 2);
+    
+	adaptiveThreshold(src, src, maxVal, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 2);
+    imshow("after", src);
 
 	for (int y = 0; y < input.rows; y++)//clear noise
 		for (int x = 0; x < input.cols; x++)
@@ -79,10 +81,12 @@ void textDetection(Mat &input) {
 					}
 				}
 				if (count <= 4)
-					input.ptr<uchar>(y, x)[0] = 0;
+					src.ptr<uchar>(y, x)[0] = 0;
 			}
 
 	Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
-	dilate(input, input, element, cv::Point(-1, -1), 1);
+	dilate(src, src, element, cv::Point(-1, -1), 1);
+    imshow("input", input);
+    imshow("after_", src);
 	input = on_trackbar(100, 0, src, input);
 }
