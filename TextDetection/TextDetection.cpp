@@ -6,7 +6,7 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	textHandler.initialize();
 	double confidence = 0.0;
 	string str;
-	
+
 
 	cvtColor(src, src, COLOR_BGR2GRAY);
 
@@ -35,13 +35,18 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	vector<vector<Point>> contours; // Vector for storing contour
 	vector<Vec4i> hierarchy;
 	findContours(gray, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE); // Find the contours in the images
-	
+
 	for (int i = 0; i < contours.size(); i++) {
 		double area = contourArea(contours[i], false);
 		if (area >= 30 && area <= 1000) {//set the area, if bigger or lower don't take
+			int tlX = temp.tl().x - 2 < 0 ? 0 : temp.tl().x - 2;
+			int tlY = temp.tl().y - 2 < 0 ? 0 : temp.tl().y - 2;
+			int brX= temp.br().x + 2 > input.cols ? input.cols-2 : temp.br().x + 2;
+			int brY = temp.br().y +2 > input.rows ? input.rows-2: temp.br().y + 2;
+			
 			temp = boundingRect(contours[i]);
-
-			Mat roi = dst(temp);
+			
+			Mat roi  (dst, Rect(tlX, tlY, brX, brY));
 			textHandler.charDecode(roi, str, confidence);
 			cout << "Character = " << str << ", Confidence = " << confidence << std::endl;
 			rectangle(dst, temp, Scalar(255, 0, 0), 1, 8, 0);
