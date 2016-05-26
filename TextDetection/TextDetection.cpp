@@ -1,14 +1,4 @@
-#include "opencv2/objdetect.hpp"
-#include "opencv2/videoio.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include <iostream>
-#include <stdio.h>
-#include<vector>
-
-using namespace std;
-using namespace cv;
-
+#include "TextDetection.hpp"
 static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 {
 	cvtColor(src, src, COLOR_BGR2GRAY);
@@ -74,24 +64,4 @@ void textDetection(Mat &input) {
 	Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
 	dilate(input, input, element, cv::Point(-1, -1), 1);
 	input = on_trackbar(100, 0, src, input);
-}
-
-int main()
-{
-	//use the camera
-	//VideoCapture cap(0);
-	//if (!cap.isOpened()) return -1;
-	//Mat input;
-	//for (;;) {
-	//	cap >> input;
-	//	textDetection(input);
-	//	//imshow("text", input);
-	//	if (waitKey(30) >= 0) break;
-	//}
-
-	//read the image
-	/*Mat input = imread("num.jpg", 1);
-	textDetection(input);
-	waitKey(0);*/
-	return 0;
 }
