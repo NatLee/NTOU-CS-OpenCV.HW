@@ -10,13 +10,18 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 
 	cvtColor(src, src, COLOR_BGR2GRAY);
 
+    threshold(src, src, 125, 255, THRESH_BINARY_INV);
+    imshow("binary", src);
+    
 	Mat labelImage(src.size(), CV_32S);
-	int nLabels = connectedComponents(input, labelImage, 8);
+    
+	int nLabels = connectedComponents(src, labelImage, 8);
 	std::vector<Vec3b> colors(nLabels);
 	colors[0] = Vec3b(0, 0, 0);//background
 	for (int label = 1; label < nLabels; ++label) {
 		colors[label] = Vec3b((255), (255), (255));
 	}
+    
 	Mat dst(src.size(), CV_8UC3);//For connected component image
 	for (int r = 0; r < dst.rows; ++r) {
 		for (int c = 0; c < dst.cols; ++c) {
@@ -29,7 +34,7 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	Mat gray;//For gray image to do the findcontours
 	dst.copyTo(gray);
 	cvtColor(gray, gray, COLOR_BGR2GRAY);
-	threshold(gray, gray, 90, 255, THRESH_BINARY_INV);
+    //imshow("binary", gray);
 
 	Rect temp;
 	vector<vector<Point>> contours; // Vector for storing contour
@@ -38,15 +43,15 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 
 	for (int i = 0; i < contours.size(); i++) {
 		double area = contourArea(contours[i], false);
-		if (area >= 30 && area <= 1000) {//set the area, if bigger or lower don't take
-			int tlX = temp.tl().x - 2 < 0 ? 0 : temp.tl().x - 2;
-			int tlY = temp.tl().y - 2 < 0 ? 0 : temp.tl().y - 2;
-			int brX= temp.br().x + 2 > input.cols ? input.cols-2 : temp.br().x + 2;
-			int brY = temp.br().y +2 > input.rows ? input.rows-2: temp.br().y + 2;
+		if (area >= 500 && area <= 1000) {//set the area,don't take if exceed the region
+			//int tlX = temp.tl().x - 2 < 0 ? temp.tl().x : temp.tl().x - 2;
+			//int tlY = temp.tl().y - 2 < 0 ? temp.tl().y : temp.tl().y - 2;
+			//int brX= temp.br().x + 2 > input.cols ? input.cols-2 : temp.br().x + 2;
+			//int brY = temp.br().y +2 > input.rows ? input.rows-2: temp.br().y + 2;
 			
 			temp = boundingRect(contours[i]);
 			
-			Mat roi  (dst, Rect(tlX, tlY, brX, brY));
+			Mat roi  (dst, temp);
 			textHandler.charDecode(roi, str, confidence);
 			cout << "Character = " << str << ", Confidence = " << confidence << std::endl;
 			rectangle(dst, temp, Scalar(255, 0, 0), 1, 8, 0);
