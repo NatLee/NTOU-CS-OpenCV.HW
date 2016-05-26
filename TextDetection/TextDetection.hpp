@@ -12,7 +12,7 @@
 
 using namespace std;
 using namespace cv;
-static Mat on_trackbar(int, void *, Mat &src, Mat &input);
+//static Mat on_trackbar(int, void *, Mat &src, Mat &input);
 long long int count_thres(Mat in1);
 void textDetection(Mat &input);
 #endif /* TextDetection_hpp */
