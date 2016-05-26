@@ -44,13 +44,14 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	for (int i = 0; i < contours.size(); i++) {
 		double area = contourArea(contours[i], false);
 		if (area >= 500 && area <= 1000) {//set the area,don't take if exceed the region
-			//int tlX = temp.tl().x - 2 < 0 ? 0 : input.tl().x - 2;
-			//int tlY = temp.tl().y - 2 < 0 ? 0 : input.tl().y - 2;
-			//int brX= temp.br().x + 2 > input.cols ? input.cols-2 : temp.br().x + 2;
-			//int brY = temp.br().y +2 > input.rows ? input.rows-2: temp.br().y + 2;
+            //int tlX = temp.tl().x - 2 < 0 ? 0 : temp.tl().x - 2;
+            //int tlY = temp.tl().y - 2 < 0 ? 0 : temp.tl().y - 2;
+            //int brX= temp.br().x + 2 > input.cols ? input.cols-2 : temp.br().x + 2;
+            //int brY = temp.br().y +2 > input.rows ? input.rows-2: temp.br().y + 2;
 			
-			temp = boundingRect(contours[i]);
+            temp = boundingRect(contours[i]);
 			
+            //Mat roi  (dst, Rect(tlX, tlY, brX, brY));
 			Mat roi  (gray, temp);
 			textHandler.charDecode(roi, str, confidence);
 			cout << "Character = " << str << ", Confidence = " << confidence << std::endl;
