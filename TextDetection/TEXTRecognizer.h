@@ -5,6 +5,9 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 
+using namespace std;
+using namespace cv;
+
 #define LIB_DECL __declspec(dllexport)
 
 class TEXTRecognizer
@@ -15,14 +18,14 @@ public:
     void initialize( );
     void initialize( std::vector<std::string> lexicon );
 
-    void textDecode( cv::Mat roiMat, std::string &text, float &confidence );
-    void charDecode( cv::Mat roiMat, std::string &character, double &confidence );
+    void textDecode( Mat roiMat, string &text, float &confidence );
+    void charDecode( Mat roiMat, string &character, double &confidence );
 
 private:
-    cv::Ptr<cv::text::OCRHMMDecoder::ClassifierCallback> _ocrProc;
-    cv::Ptr<cv::text::OCRBeamSearchDecoder> _txtProc;
-    std::string _vocabulary;
-    cv::Mat _transition_p;
+    Ptr<cv::text::OCRHMMDecoder::ClassifierCallback> _ocrProc;
+    Ptr<cv::text::OCRBeamSearchDecoder> _txtProc;
+    string _vocabulary;
+    Mat _transition_p;
 };
 
 #endif // TEXTRECOGNIZER_H

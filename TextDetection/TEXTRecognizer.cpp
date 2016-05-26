@@ -11,11 +11,11 @@ TEXTRecognizer::~TEXTRecognizer()
 
 void TEXTRecognizer::initialize()
 {
-    std::vector<std::string> lexicon;
+    vector<string> lexicon;
     initialize( lexicon );
 }
 
-void TEXTRecognizer::initialize( std::vector<std::string> lexicon )
+void TEXTRecognizer::initialize( vector<string> lexicon )
 {
     _ocrProc = cv::text::loadOCRHMMClassifierCNN("OCRBeamSearch_CNN_model_data.xml.gz");
 
@@ -38,20 +38,20 @@ void TEXTRecognizer::initialize( std::vector<std::string> lexicon )
 
 void TEXTRecognizer::textDecode(cv::Mat roiMat, std::string &text, float &confidence)
 {
-    std::string output;
-    std::vector<cv::Rect> boxes;
-    std::vector<std::string> words;
-    std::vector<float> confidences;
+    string output;
+    vector<cv::Rect> boxes;
+    vector<std::string> words;
+    vector<float> confidences;
     _txtProc->run( roiMat, output, &boxes, &words, &confidences, cv::text::OCR_LEVEL_WORD );
 
     text = words[0];
     confidence = confidences[0];
 }
 
-void TEXTRecognizer::charDecode( cv::Mat roiMat, std::string &character, double &confidence )
+void TEXTRecognizer::charDecode( Mat roiMat, string &character, double &confidence )
 {
-    std::vector<int> out_classes;
-    std::vector<double> out_confidences;
+    vector<int> out_classes;
+    vector<double> out_confidences;
     _ocrProc->eval( roiMat, out_classes, out_confidences);
 
     character = _vocabulary[out_classes[0]];

@@ -1,6 +1,13 @@
 #include "TextDetection.hpp"
+#include "TEXTRecognizer.h"
 static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 {
+	TEXTRecognizer textHandler;
+	textHandler.initialize();
+	double confidence = 0.0;
+	string str;
+	
+
 	cvtColor(src, src, COLOR_BGR2GRAY);
 
 	Mat labelImage(src.size(), CV_32S);
@@ -24,15 +31,19 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	cvtColor(gray, gray, COLOR_BGR2GRAY);
 	threshold(gray, gray, 90, 255, THRESH_BINARY_INV);
 
-	cv::Rect temp;
-	vector<vector<cv::Point>> contours; // Vector for storing contour
+	Rect temp;
+	vector<vector<Point>> contours; // Vector for storing contour
 	vector<Vec4i> hierarchy;
 	findContours(gray, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE); // Find the contours in the images
-
+	
 	for (int i = 0; i < contours.size(); i++) {
 		double area = contourArea(contours[i], false);
 		if (area >= 30 && area <= 1000) {//set the area, if bigger or lower don't take
 			temp = boundingRect(contours[i]);
+
+			Mat roi = dst(temp);
+			textHandler.charDecode(roi, str, confidence);
+			cout << "Character = " << str << ", Confidence = " << confidence << std::endl;
 			rectangle(dst, temp, Scalar(255, 0, 0), 1, 8, 0);
 		}
 	}
@@ -61,7 +72,7 @@ void textDetection(Mat &input) {
 					input.ptr<uchar>(y, x)[0] = 0;
 			}
 
-	Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
+	Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
 	dilate(input, input, element, cv::Point(-1, -1), 1);
 	input = on_trackbar(100, 0, src, input);
 }
