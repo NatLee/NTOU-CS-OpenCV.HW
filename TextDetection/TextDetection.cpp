@@ -17,7 +17,7 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
     for (int r = 0; r < labelImage.rows; ++r) {
         for (int c = 0; c < labelImage.cols; ++c) {
             int label = labelImage.at<int>(r, c);
-            cout<<setfill(' ')<<setw(3)<<label;
+            //cout<<setfill(' ')<<setw(3)<<label;
         }
         cout<<endl;
     }
@@ -30,11 +30,11 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
     Rect temp;
     vector<vector<Point>> contours; // Vector for storing contour
     vector<Vec4i> hierarchy;
-    findContours(gray, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE); // Find the contours in the images
+    findContours(src, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE); // Find the contours in the images
     string tstring="roia";
     for (int i = 0; i < contours.size(); i++) {
         double area = contourArea(contours[i], false);
-        if (area >= 200 && area <= 2000) {//set the area,don't take if exceed the region
+        //if (area >= 200 && area <= 3000) {//set the area,don't take if exceed the region
             
             temp = boundingRect(contours[i]);
             
@@ -45,7 +45,7 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
             textHandler.charDecode(roi, str, confidence);
             cout << "Character = " << str << ", Confidence = " << confidence << std::endl;
             rectangle(src, temp, Scalar(255, 0, 0), 1, 8, 0);
-        }
+        //}
     }
     return src;
 }

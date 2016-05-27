@@ -17,7 +17,7 @@ int main()
 //    }
 //    
     //read the image
-    Mat input = imread("13285567_1183160171734202_1669539971_n.jpg", 1);
+    Mat input = imread("1.png", 1);
 
     //string str;
     //double confidence;
