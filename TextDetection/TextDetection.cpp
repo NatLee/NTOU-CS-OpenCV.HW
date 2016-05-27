@@ -33,6 +33,7 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	Mat gray;//For gray image to do the findcontours
 	dst.copyTo(gray);
 	cvtColor(gray, gray, COLOR_BGR2GRAY);
+    
     threshold(gray, gray, 50, 255, THRESH_BINARY_INV);
     imshow("binary", gray);
 
@@ -52,13 +53,14 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
             temp = boundingRect(contours[i]);
 			
             //Mat roi  (dst, Rect(tlX, tlY, brX, brY));
-			Mat roi  (gray, temp);
+			Mat roi  (input, temp);
 			textHandler.charDecode(roi, str, confidence);
+            imshow(str, roi);
 			cout << "Character = " << str << ", Confidence = " << confidence << std::endl;
-			rectangle(dst, temp, Scalar(255, 0, 0), 1, 8, 0);
+			rectangle(input, temp, Scalar(255, 0, 0), 1, 8, 0);
 		}
-	}
-	return dst;
+    }
+	return input;
 }
 
 void textDetection(Mat &input) {
@@ -87,7 +89,7 @@ void textDetection(Mat &input) {
 
 	Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
 	dilate(src, src, element, cv::Point(-1, -1), 1);
-    imshow("input", input);
-    imshow("after_", src);
+    //imshow("input", input);
+    //imshow("after_", src);
 	input = on_trackbar(100, 0, src, input);
 }
