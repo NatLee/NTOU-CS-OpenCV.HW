@@ -2,29 +2,11 @@
 #include "TEXTRecognizer.h"
 int main()
 {
-    //TEXTRecognizer textHandler;
-    //textHandler.initialize();
-    
-//    //use the camera
-//    VideoCapture cap(0);
-//    if (!cap.isOpened()) return -1;
-//    Mat input;
-//    for (;;) {
-//    	cap >> input;
-//    	textDetection(input);
-//    	imshow("text", input);
-//    	if (waitKey(30) >= 0) break;
-//    }
-//    
     //read the image
-    Mat input = imread("1.png", 1);
-
-    //string str;
-    //double confidence;
-    //textHandler.charDecode( input, str, confidence);
-    //cout << "Character = " << str << ", Confidence = " << confidence << std::endl;
-    imshow("test", input);
+    Mat input = imread("abc.jpg", 1);
+	
     textDetection(input);
+	namedWindow("image_show", WINDOW_AUTOSIZE);
 	imshow("image_show", input);
     waitKey(0);
     return 0;
