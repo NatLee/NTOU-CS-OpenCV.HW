@@ -1,7 +1,11 @@
 #include "TextDetection.hpp"
 #include "TEXTRecognizer.h"
-#include <iomanip>
-#include <map>
+
+bool cmp(int a, int b)
+{
+	return a > b;
+}
+
 static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 {
 	TEXTRecognizer textHandler;
@@ -15,6 +19,7 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	cout << nLabels << endl;
 
 	map<int, Rect> contour;
+	vector<int>area_count;//counting the all contour average area, delete the biggest contour
 	
 	for (int r = 0; r < labelImage.rows; ++r) {//store top left point and bottom right point
 		for (int c = 0; c < labelImage.cols; ++c) {
@@ -27,18 +32,29 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 			contour[label].y = r < contour[label].y ? r : contour[label].y;
 			contour[label].width = c > contour[label].width ? c : contour[label].width;
 			contour[label].height = r > contour[label].height ? r : contour[label].height;
-			cout << setfill(' ') << setw(3) << label;
+			//cout << setfill(' ') << setw(3) << label;
 		}
-		cout << endl;
+		//cout << endl;
 	}
 	string tstring = "roi";
-	int count = 1;
+
+	int area_ave = 0;//do average area
 	for (int i = 1; i < nLabels; i++) {
-		int area = (contour[i].height - contour[i].y)*(contour[i].width - contour[i].x);//contour's area
+		int area = (contour[i].height - contour[i].y)*(contour[i].width - contour[i].x);
+		area_count.push_back(area);
+	}
+	sort(area_count.begin(), area_count.end(), cmp);
+	for (int i = 0; i < nLabels / 2; i++) 
+		area_ave += area_count[i];
+	area_ave /= (nLabels / 2);//end
+	
+	int count = 1;
+	for (int i = 1; i < nLabels; i++) {//find text
+		int area = (contour[i].height - contour[i].y)*(contour[i].width - contour[i].x);
 		contour[i].width -= (contour[i].x-2);
 		contour[i].height -= (contour[i].y-2);
-		//cout << contour[i].tl_x << " " << contour[i].tl_y << " " << contour[i].br_x << " " << contour[i].br_y << " " << area << endl;
-		if (area >= 50 & area <= 1000) {//Set the area ,don't take if exceed the region
+		if (area >= area_ave - d&&area <= area_ave + d&&area>0) {//Set the area ,don't take if exceed the region
+			cout << contour[i].x << " " << contour[i].y << " " << contour[i].width << " " << contour[i].height << " " << area << endl;
 			stringstream ss;
 			ss << count++;
 			cout << tstring + ss.str();

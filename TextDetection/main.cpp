@@ -3,7 +3,7 @@
 int main()
 {
     //read the image
-    Mat input = imread("abc.jpg", 1);
+    Mat input = imread("num.jpg", 1);
 	
     textDetection(input);
 	namedWindow("image_show", WINDOW_AUTOSIZE);
