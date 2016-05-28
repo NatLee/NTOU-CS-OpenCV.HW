@@ -6,7 +6,7 @@ bool cmp(int a, int b)
 	return a > b;
 }
 
-Mat clearDots(Mat &src) {
+Mat clearDots(Mat src) {
 	for (int r = 0; r < src.rows; ++r) {
 		for (int c = 0; c < src.cols; ++c) {
 			int label = src.ptr<uchar>(r, c)[0];
@@ -17,15 +17,15 @@ Mat clearDots(Mat &src) {
 						if (src.ptr<uchar>(i, j)[0] == 255) count++;
 					}
 				}
-				if (count < 5)
+				if (count < 3)
 					src.ptr<uchar>(r, c)[0] = 0;
 			}
 		}
 	}
-	Mat element = getStructuringElement(MORPH_ELLIPSE, Size(1, 1));
+	/*Mat element = getStructuringElement(MORPH_ELLIPSE, Size(1, 1));
 	erode(src, src, element, cv::Point(-1, -1), 2);
 	element = getStructuringElement(MORPH_RECT, Size(3, 3));
-	dilate(src, src, element, cv::Point(-1, -1), 1);
+	dilate(src, src, element, cv::Point(-1, -1), 1);*/
 	return src;
 }
 
@@ -35,7 +35,7 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	TEXTRecognizer textHandler;
 	textHandler.initialize();
 	double confidence = 0.0;
-	string str;
+	string text;
 	//imshow("binary", src);
 
 	Mat labelImage(src.size(), CV_32SC1);
@@ -43,10 +43,6 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	src = clearDots(src);
 
 	imshow("clear", src);
-
-
-
-
 
 	int nLabels = connectedComponents(src, labelImage, 8);
 	cout << nLabels << endl;
@@ -63,14 +59,12 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 			}
 			contour[label].x = c < contour[label].x ? c : contour[label].x;
 			contour[label].y = r < contour[label].y ? r : contour[label].y;
-			contour[label].width = c > contour[label].width ? c : contour[label].width;
-			contour[label].height = r > contour[label].height ? r : contour[label].height;
+			contour[label].width = (c + 2 > contour[label].width&&c + 2 < labelImage.cols) ? c + 2 : contour[label].width;
+			contour[label].height = (r + 2 > contour[label].height&&r + 2 < labelImage.rows) ? r + 2 : contour[label].height;
 			//cout << setfill(' ') << setw(3) << label;
 		}
 		//cout << endl;
 	}
-
-	string tstring = "roi";
 
 	int area_ave = 0;//do average area
 	for (int i = 1; i < nLabels; i++) {
@@ -84,20 +78,16 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 
 	int count = 1;
 	for (int i = 1; i < nLabels; i++) {//find text
-		int area = (contour[i].height - contour[i].y)*(contour[i].width - contour[i].x);
-		contour[i].width -= (contour[i].x );
-		contour[i].height -= (contour[i].y );
-		if (area >= area_ave - d&&area <= area_ave + d&&area>0) {//Set the area ,don't take if exceed the region
+		int area = (contour[i].height - 2 - contour[i].y)*(contour[i].width - 2 - contour[i].x);
+		contour[i].width -= (contour[i].x);
+		contour[i].height -= (contour[i].y);
+		if (area >= area_ave - d&&area <= area_ave + d&&area>25) {//Set the area ,don't take if exceed the region
 			//cout << contour[i].x << " " << contour[i].y << " " << contour[i].width << " " << contour[i].height << " " << area << endl;
-			stringstream ss;
-			ss << count++;
-			cout << tstring + ss.str();
 			Mat roi(input, contour[i]);
-			namedWindow(tstring + ss.str(), WINDOW_AUTOSIZE);
-			imshow(tstring + ss.str(), roi);
-			textHandler.charDecode(roi, str, confidence);
-			cout << " Character = " << str << ", Confidence = " << confidence << std::endl;
+			textHandler.charDecode(roi, text, confidence);
+			cout << " Character = " << text << ", Confidence = " << confidence << std::endl;
 			rectangle(input, contour[i], Scalar(255, 0, 0), 1, 8, 0);
+			imshow(text, roi);
 		}
 	}
 	imshow("rect", input);
@@ -110,9 +100,5 @@ void textDetection(Mat &input) {
 	cvtColor(src, src, COLOR_BGR2GRAY);
 	double maxVal = 255;
 	adaptiveThreshold(src, src, maxVal, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 11, 2);
-
-	Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
-	//erode(src, src, element, cv::Point(-1, -1), 1);
-	//dilate(src, src, element, cv::Point(-1, -1), 1);
 	input = on_trackbar(100, 0, src, input);
 }

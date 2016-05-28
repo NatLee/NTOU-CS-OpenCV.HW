@@ -3,10 +3,8 @@
 int main()
 {
     //read the image
-    Mat input = imread("num.jpg", 1);
-	
+    Mat input = imread("digit1.jpg", 1);
     textDetection(input);
-	namedWindow("image_show", WINDOW_AUTOSIZE);
 	imshow("image_show", input);
     waitKey(0);
     return 0;
