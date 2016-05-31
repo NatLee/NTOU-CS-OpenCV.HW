@@ -72,12 +72,13 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 		area_count.push_back(area);
 	}
 	sort(area_count.begin(), area_count.end(), cmp);
-	for (int i = 0; i < nLabels / 2; i++)
+    for (int i = 0; i<nLabels&&i < 10; i++){
+        cout<<area_count[i]<<endl;
 		area_ave += area_count[i];
-	area_ave /= (nLabels / 2);//end
-
-	int count = 1;
-	for (int i = 1; i < nLabels; i++) {//find text
+    }
+	area_ave /= 10;//end
+    int d=area_ave/5*4;
+	for (int i = 0; i < nLabels; i++) {//find text
 		int area = (contour[i].height - 2 - contour[i].y)*(contour[i].width - 2 - contour[i].x);
 		contour[i].width -= (contour[i].x);
 		contour[i].height -= (contour[i].y);

@@ -11,7 +11,7 @@
 #include <map>
 #include <algorithm>
 #include <vector>
-#define d 1000
+//#define d 1000
 
 using namespace std;
 using namespace cv;
