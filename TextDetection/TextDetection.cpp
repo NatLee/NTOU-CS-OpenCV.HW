@@ -1,6 +1,12 @@
 #include "TextDetection.hpp"
 #include "TEXTRecognizer.h"
 
+void help()
+{
+	printf("Press key C to stop the frame and do text recognization\n");
+	printf("If you want to continue and press another key\n");
+}
+
 bool cmp(int a, int b)
 {
 	return a > b;
@@ -12,12 +18,12 @@ Mat clearDots(Mat src) {
 			int label = src.ptr<uchar>(r, c)[0];
 			if (label == 255) {
 				int count = 0;
-				for (int i = r - 2; i < r + 2 && i >= 0 && i < src.rows; i++) {
-					for (int j = c - 2; j < c + 2 && j >= 0 && j < src.cols; j++) {
+				for (int i = r - 3; i < r + 3 && i >= 0 && i < src.rows; i++) {
+					for (int j = c - 3; j < c + 3 && j >= 0 && j < src.cols; j++) {
 						if (src.ptr<uchar>(i, j)[0] == 255) count++;
 					}
 				}
-				if (count < 3)
+				if (count < 4)
 					src.ptr<uchar>(r, c)[0] = 0;
 			}
 		}
@@ -32,6 +38,9 @@ Mat clearDots(Mat src) {
 
 static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 {
+	rectangle(input, Rect(input.cols / 4, input.rows / 4, input.cols / 2, input.rows / 4), Scalar(0, 0, 255), 2, 8, 0);
+	//only do text recognization in this region
+
 	TEXTRecognizer textHandler;
 	textHandler.initialize();
 	double confidence = 0.0;
@@ -50,8 +59,8 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 	map<int, Rect> contour;
 	vector<int>area_count;//counting the all contour average area, delete the biggest contour
 
-	for (int r = 0; r < labelImage.rows; ++r) {//store top left point and bottom right point
-		for (int c = 0; c < labelImage.cols; ++c) {
+	for (int r = labelImage.rows / 4; r < labelImage.rows / 2; ++r) {//store top left point and bottom right point
+		for (int c = labelImage.cols / 4; c < labelImage.cols * 3 / 4; ++c) {
 			int label = labelImage.at<int>(r, c);
 			if (contour[label].x == 0 && contour[label].y == 0) {
 				contour[label].x = 99999;
@@ -72,23 +81,24 @@ static Mat on_trackbar(int, void *, Mat &src, Mat &input)
 		area_count.push_back(area);
 	}
 	sort(area_count.begin(), area_count.end(), cmp);
-    for (int i = 0; i<nLabels&&i < 10; i++){
-        cout<<area_count[i]<<endl;
+	for (int i = 0; i < 5 && i < nLabels; i++)
 		area_ave += area_count[i];
-    }
-	area_ave /= 10;//end
-    int d=area_ave/5*4;
-	for (int i = 0; i < nLabels; i++) {//find text
+	area_ave /= 5;//end
+
+	int d = area_ave * 2 / 3;
+
+	for (int i = 1; i < nLabels; i++) {//find text
 		int area = (contour[i].height - 2 - contour[i].y)*(contour[i].width - 2 - contour[i].x);
 		contour[i].width -= (contour[i].x);
 		contour[i].height -= (contour[i].y);
-		if (area >= area_ave - d&&area <= area_ave + d&&area>25) {//Set the area ,don't take if exceed the region
+		if (area >= area_ave - d&&area <= area_ave + d) {//Set the area ,don't take if exceed the region
 			//cout << contour[i].x << " " << contour[i].y << " " << contour[i].width << " " << contour[i].height << " " << area << endl;
-			Mat roi(input, contour[i]);
+			Mat roi(src, contour[i]);
 			textHandler.charDecode(roi, text, confidence);
-			cout << " Character = " << text << ", Confidence = " << confidence << std::endl;
+			//cout << " Character = " << text << ", Confidence = " << confidence << std::endl;
 			rectangle(input, contour[i], Scalar(255, 0, 0), 1, 8, 0);
-			imshow(text, roi);
+			putText(input, text, Point(contour[i].x, contour[i].y + contour[i].height), CV_FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(255, 255, 0));
+			//imshow(text, roi);
 		}
 	}
 	imshow("rect", input);

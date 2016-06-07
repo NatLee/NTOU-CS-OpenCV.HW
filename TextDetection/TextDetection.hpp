@@ -11,7 +11,6 @@
 #include <map>
 #include <algorithm>
 #include <vector>
-//#define d 1000
 
 using namespace std;
 using namespace cv;
@@ -19,4 +18,5 @@ using namespace cv;
 //static Mat on_trackbar(int, void *, Mat &src, Mat &input);
 void textDetection(Mat &input);
 Mat clearDots(Mat);
+void help();
 #endif /* TextDetection_hpp */
