@@ -5,7 +5,6 @@
 #include<cstdio>
 #include<vector>
 
-
 using namespace cv;
 using namespace std;
 
@@ -28,17 +27,36 @@ void grid(unsigned char* img, int width, int height, int *feature) {
 		}
 	}
 }
-
-void projection(unsigned char* img, int width, int height, int *feature) {
-	memset(feature, 0, width + height);
-	for (int i = 0; i < height - 1; i++, img += width) {
-		for (int j = 0; j < width - 1; j++) {
-			if (img[j]) {
+//ROW
+void rowProjection(Mat img, int *feature,int &average) {
+	for (int i = 0; i < img.rows - 1; i++) {
+		for (int j = 0; j < img.cols - 1; j++) {
+			if ((int)img.at<uchar>(i, j)) {
 				feature[i]++;
-				feature[j + height]++;
 			}
 		}
 	}
+	for (int i = 0; i < img.rows; i++) {
+		average += feature[i];
+	}
+	average /= img.rows;
+
+
+}
+//COL
+void colProjection(Mat img, int *feature,int &average) {
+	for (int i = 0; i < img.rows - 1; i++) {
+		for (int j = 0; j < img.cols - 1; j++) {
+			if ((int)img.at<uchar>(i, j)) {
+				feature[j]++;
+			}
+		}
+	}
+	for (int i = 0; i < img.cols; i++) {
+		average += feature[i];
+	}
+	average /= img.cols;
+
 }
 
 void profile(unsigned char* img, int width, int height, int *feature) {
@@ -128,7 +146,6 @@ Mat1b getDisk(int M)
 
 int main()
 {
-
 	VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;
 
@@ -137,7 +154,7 @@ int main()
 		cap >> frame;
 		Rect position = Rect(frame.cols / 4, frame.rows / 4, frame.cols / 2, frame.rows / 6), temp;
 		Mat roi(frame, position);
-		
+
 		Mat roiStrel;
 		cvtColor(roi, roiStrel, CV_BGR2GRAY);
 		Mat roiGray;
@@ -148,15 +165,74 @@ int main()
 		double fmax, fmin;
 		minMaxLoc(roiSubtract, &fmin, &fmax);
 
-		double level = (fmax - (fmax - fmin) / 3) / 255;
-		threshold(roiSubtract, roiSubtract, level, fmax, THRESH_BINARY);
+		double level = (fmax - (fmax - fmin) / 3);
+
+		threshold(roiSubtract, roiSubtract, level, 255, THRESH_BINARY);
 		rectangle(frame, position, Scalar(0, 255, 255), 1, 8, 0);
 
+		//fill 
+		Mat im_floodfill = roiSubtract.clone();
+		floodFill(im_floodfill, Point(0, 0), Scalar(255));
+		Mat im_floodfill_inv;
+		bitwise_not(im_floodfill, im_floodfill_inv);
+		Mat im_out = (roiSubtract | im_floodfill_inv);
+		
+
+		int *featureMaxRowRoi = new  int[roiSubtract.rows]();
+		int avgRow=0;
+		rowProjection(im_floodfill_inv, featureMaxRowRoi, avgRow);
+
+		int startP=0, endP=0, max = 0;
+
+
+		IplImage *image = cvCreateImage(cvSize(500, 500), 8, 3);
+		for (int i = 0; i < im_floodfill_inv.rows-1; i++) {
+			int t_startP, t_endP, t_max = 0;
+			if (featureMaxRowRoi[i] >= avgRow/2) {
+				t_startP = i;
+				while (featureMaxRowRoi[i++] >= avgRow/2) {
+					t_max = i - t_startP;
+					if (t_max > max) {
+						startP = t_startP;
+						endP = i;
+					}
+				}
+			}
+		}
+
+		Mat maxColRoi(im_floodfill_inv, Rect(0, startP, im_floodfill_inv.cols, endP - startP));
+
+
+		int *featureMaxColRoi = new  int[maxColRoi.cols]();
+		int avgCol=0;
+		colProjection(maxColRoi, featureMaxColRoi, avgCol);
+
+		if(maxColRoi.cols!=0 && maxColRoi.rows!=0)
+			 imshow("maxColRoi", maxColRoi);
+
+		for (int i = 0; i < maxColRoi.cols-1; i++) {
+			int t_startP, t_endP = 0;
+			if (featureMaxColRoi[i] >=3) {
+				t_startP = i;
+				while (featureMaxColRoi[i++] >=3) {}
+				t_endP = i;
+				if (t_endP - t_startP > 5) {
+					cout << t_startP << " " << t_endP << endl;
+					rectangle(roi, Rect(t_startP,startP, t_endP-t_startP, endP - startP), Scalar(0, 0, 255), 1, 8, 0);
+				}
+			}
+			cvLine(image, cvPoint(i, 0), cvPoint(i, featureMaxColRoi[i]), cvScalar(255, 255, 255));
+		}
+		
+
+		cvShowImage("image", image);
+		cvReleaseImage(&image);
+
+		imshow("flood_inv", im_floodfill_inv);
 		imshow("frame", frame);
-		//imshow("roiGray", roiGray);
-		//imshow("roiStrel", roiStrel);
-		imshow("roiSubtract ", roiSubtract);
-		//imshow("roi", roi);
+		imshow("roi", roi);
+		//imshow("roiSubtract ", roiSubtract);
+
 		if (waitKey(30) >= 0) break;
 	}
 
