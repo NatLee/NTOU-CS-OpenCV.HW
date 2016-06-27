@@ -2,7 +2,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
-#include<stdio.h>
+#include<cstdio>
+#include<vector>
+
 #define INPUT_FILE              "7.jpg"
 #define OUTPUT_FOLDER_PATH      string("")
 
@@ -84,52 +86,81 @@ void profile(unsigned char* img, int width, int height, int *feature) {
 	}
 }
 
+Mat1b getDisk(int M)
+{
+	// M positive and multiple of 3
+	CV_Assert((M > 0) && ((M % 3) == 0));
+
+	int k = M / 3;
+	int rows = M * 2 + 1;
+	int cols = M * 2 + 1;
+	Point c(M, M);
+
+	Mat1b strel(rows, cols, uchar(0));
+
+
+	vector<Point> vertices(8);
+	vertices[0].y = c.x - k;
+	vertices[0].x = 0;
+	vertices[1].y = c.x + k;
+	vertices[1].x = 0;
+
+	vertices[2].y = cols - 1;
+	vertices[2].x = c.y - k;
+	vertices[3].y = cols - 1;
+	vertices[3].x = c.y + k;
+
+	vertices[4].y = c.x + k;
+	vertices[4].x = rows - 1;
+	vertices[5].y = c.x - k;
+	vertices[5].x = rows - 1;
+
+	vertices[6].y = 0;
+	vertices[6].x = c.y + k;
+	vertices[7].y = 0;
+	vertices[7].x = c.y - k;
+
+	fillConvexPoly(strel, vertices, Scalar(1));
+
+	return strel;
+
+}
+
+
+
 int main()
 {
-	Mat large = imread(INPUT_FILE);
-	Mat rgb;
-	// downsample and use it for processing
-	pyrDown(large, rgb);
-	Mat small;
-	cvtColor(rgb, small, CV_BGR2GRAY);
-	// morphological gradient
-	Mat grad;
-	Mat morphKernel = getStructuringElement(MORPH_ELLIPSE, Size(3, 3));
-	morphologyEx(small, grad, MORPH_GRADIENT, morphKernel);
-	// binarize
-	Mat bw;
-	threshold(grad, bw, 0.0, 255.0, THRESH_BINARY | THRESH_OTSU);
-	// connect horizontally oriented regions
-	Mat connected;
-	morphKernel = getStructuringElement(MORPH_RECT, Size(9, 1));
-	morphologyEx(bw, connected, MORPH_CLOSE, morphKernel);
-	// find contours
-	Mat mask = Mat::zeros(bw.size(), CV_8UC1);
-	vector<vector<Point>> contours;
-	vector<Vec4i> hierarchy;
-	findContours(connected, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-	// filter contours
-	for (int idx = 0; idx >= 0; idx = hierarchy[idx][0])
-	{
-		Rect rect = boundingRect(contours[idx]);
-		Mat maskROI(mask, rect);
-		maskROI = Scalar(0, 0, 0);
-		// fill the contour
-		drawContours(mask, contours, idx, Scalar(255, 255, 255), CV_FILLED);
-		// ratio of non-zero pixels in the filled region
-		double r = (double)countNonZero(maskROI) / (rect.width*rect.height);
 
-		if (r > .45 /* assume at least 45% of the area is filled if it contains text */
-			&&
-			(rect.height > 8 && rect.width > 8) /* constraints on region size */
-												/* these two conditions alone are not very robust. better to use something
-												like the number of significant peaks in a horizontal projection as a third condition */
-			)
-		{
-			rectangle(rgb, rect, Scalar(0, 255, 0), 2);
-		}
+	VideoCapture cap(0);
+	if (!cap.isOpened()) return -1;
+
+	for (;;) {
+		Mat frame, skin;
+		cap >> frame;
+		Rect position = Rect(frame.cols / 4, frame.rows / 4, frame.cols / 2, frame.rows / 6), temp;
+		Mat roi(frame, position);
+		
+		Mat roiStrel;
+		cvtColor(roi, roiStrel, CV_BGR2GRAY);
+		Mat roiGray;
+		roiStrel.copyTo(roiGray);
+		Mat1b kernel = getDisk(3);
+		morphologyEx(roiStrel, roiStrel, MORPH_ERODE, kernel);
+		Mat roiSubtract = roiGray - roiStrel;
+		double fmax, fmin;
+		minMaxLoc(roiSubtract, &fmin, &fmax);
+
+		double level = (fmax - (fmax - fmin) / 3) / 255;
+		threshold(roiSubtract, roiSubtract, level, fmax, THRESH_BINARY);
+		rectangle(frame, position, Scalar(0, 255, 255), 1, 8, 0);
+
+		imshow("frame", frame);
+		//imshow("roiGray", roiGray);
+		//imshow("roiStrel", roiStrel);
+		imshow("roiSubtract ", roiSubtract);
+		//imshow("roi", roi);
+		if (waitKey(30) >= 0) break;
 	}
-	imwrite(OUTPUT_FOLDER_PATH + string("rgb.jpg"), rgb);
 
 	return 0;
 }
