@@ -5,8 +5,6 @@
 #include<cstdio>
 #include<vector>
 
-#define INPUT_FILE              "7.jpg"
-#define OUTPUT_FOLDER_PATH      string("")
 
 using namespace cv;
 using namespace std;
