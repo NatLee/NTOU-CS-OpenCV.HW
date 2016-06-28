@@ -132,7 +132,8 @@ int main()
 {
 	/*VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;*/
-
+	double model[10][4] =
+	{ { 0.266504,0.212714,0.288509,0.232274 },{ 0.179487,0.290598,0.196581,0.333333 },{ 0.142077,0.322404,0.278689,0.256831 },{ 0.152866,0.363057,0.133758,0.350318 },{ 0.0921986,0.375887,0.184397,0.347518 },{ 0.337209,0.290698,0.116279,0.255814 },{ 0.190635,0.12709,0.327759,0.354515 },{ 0.234483,0.42069,0.117241,0.227586 },{ 0.273356,0.179931,0.290657,0.256055 },{ 0.328814,0.342373,0.122034,0.20678 } };
 	for (;;) {
 		Mat frame, skin;
 		//cap >> frame;
@@ -187,13 +188,12 @@ int main()
 		}
 
 		Mat maxColRoi(im_floodfill_inv, Rect(0, startP, im_floodfill_inv.cols, endP - startP));
-		if (maxColRoi.cols != 0 && maxColRoi.rows != 0)//avoid crashing
-			imshow("maxColRoi", maxColRoi);
-		else
-			continue;
+
 		int *featureMaxColRoi = new  int[maxColRoi.cols]();
 		int avgCol = 0;
 		colProjection(maxColRoi, featureMaxColRoi, avgCol);
+
+		vector<Rect>rect_temp;
 
 		for (int i = 0; i < maxColRoi.cols - 1; i++) {
 			int t_startP, t_endP = 0;
@@ -202,24 +202,89 @@ int main()
 				while (featureMaxColRoi[i++] >= 3) {}
 				t_endP = i;
 				if (t_endP - t_startP > 5) {
-					cout << t_startP << " " << t_endP << endl;
 					rectangle(roi, Rect(t_startP, startP, t_endP - t_startP, endP - startP), Scalar(0, 0, 255), 1, 8, 0);
+					//cout << Rect(t_startP, startP, t_endP - t_startP, endP - startP) << endl;
+					rect_temp.push_back(Rect(t_startP, startP, t_endP - t_startP, endP - startP));
 				}
 			}
 			cvLine(image, cvPoint(i, 0), cvPoint(i, featureMaxColRoi[i]), cvScalar(255, 255, 255));
 		}
+		vector<Rect>::iterator i;
+		cout << "/////////////\n";
+		for (i = rect_temp.begin(); i != rect_temp.end(); i++) {
+			double blackdot[4] = {};
+			for (int row = i->tl().y; row < i->tl().y + i->height / 2; row++) {//left top
+				for (int col = i->tl().x; col < i->tl().x + i->width / 2; col++) {
+					if ((int)im_floodfill_inv.at<uchar>(row, col)) {
+						blackdot[0]++;
+					}
+				}
+			}
+			for (int row = i->tl().y; row < i->tl().y + i->height / 2; row++) {//right top
+				for (int col = i->tl().x + i->width / 2; col < i->tl().x + i->width; col++) {
+					if ((int)im_floodfill_inv.at<uchar>(row, col)) {
+						blackdot[1]++;
+					}
+				}
+			}
+			for (int row = i->tl().y + i->height / 2; row < i->tl().y + i->height; row++) {//left bottom
+				for (int col = i->tl().x; col < i->tl().x + i->width / 2; col++) {
+					if ((int)im_floodfill_inv.at<uchar>(row, col)) {
+						blackdot[2]++;
+					}
+				}
+			}
+			for (int row = i->tl().y + i->height / 2; row < i->tl().y + i->height; row++) {//right bottom
+				for (int col = i->tl().x + i->width / 2; col < i->tl().x + i->width; col++) {
+					if ((int)im_floodfill_inv.at<uchar>(row, col)) {
+						blackdot[3]++;
+					}
+				}
+			}
+			/*cout << i[0] << endl;
+			double sum = blackdot[0] + blackdot[1] + blackdot[2] + blackdot[3];
+			cout << (blackdot[0] / sum) << "," << (blackdot[1] / sum) << "," << (blackdot[2] / sum) << "," << (blackdot[3] / sum) << endl;
+			cout << blackdot[0] << " " << blackdot[1] << " " << blackdot[2] << " " << blackdot[3] << endl;*/
+			cout << "maybe  ";
+			for (int num = 0; num < 10; num++) {
+				double sum = blackdot[0] + blackdot[1] + blackdot[2] + blackdot[3];
+				int correct = 0;
+				if (blackdot[0] / sum >= model[num][0] - thres_num&&blackdot[0] / sum <= model[num][0] + thres_num) {
+					++correct;
+				}
+				if (blackdot[1] / sum >= model[num][1] - thres_num&&blackdot[1] / sum <= model[num][1] + thres_num) {
+					++correct;
+				}
+				if (blackdot[2] / sum >= model[num][2] - thres_num&&blackdot[2] / sum <= model[num][2] + thres_num) {
+					++correct;
+				}
+				if (blackdot[3] / sum >= model[num][3] - thres_num&&blackdot[3] / sum <= model[num][3] + thres_num) {
+					++correct;
+				}
+				if (correct >= 2) {
+					cout << num << " ";
+				}
+			}
+			cout << endl;
+		}
+
 		ThinSubiteration1(maxColRoi, maxColRoi);
 		ThinSubiteration2(maxColRoi, maxColRoi);
+
+		if (maxColRoi.cols != 0 && maxColRoi.rows != 0)//avoid crashing
+			cv::imshow("maxColRoi", maxColRoi);
+		else
+			continue;
 
 		cvShowImage("image", image);
 		cvReleaseImage(&image);
 
-		imshow("flood_inv", im_floodfill_inv);
-		imshow("frame", frame);
-		imshow("roi", roi);
+		cv::imshow("flood_inv", im_floodfill_inv);
+		cv::imshow("frame", frame);
+		cv::imshow("roi", roi);
 		//imshow("roiSubtract ", roiSubtract);
-		waitKey(0);
-		if (waitKey(30) >= 0) break;
+		cv::waitKey(0);
+		if (cv::waitKey(30) >= 0) break;
 	}
 
 	return 0;

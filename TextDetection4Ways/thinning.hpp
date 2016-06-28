@@ -5,6 +5,7 @@
 #include <iostream>
 #include<cstdio>
 #include<vector>
+#define thres_num 0.05
 
 using namespace cv;
 using namespace std;
