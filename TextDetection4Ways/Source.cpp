@@ -8,6 +8,52 @@
 using namespace cv;
 using namespace std;
 
+void ThinSubiteration1(Mat & pSrc, Mat & pDst) {
+	int rows = pSrc.rows;
+	int cols = pSrc.cols;
+	pSrc.copyTo(pDst);
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			if (pSrc.at<float>(i, j) == 1.0f) {
+				/// get 8 neighbors
+				/// calculate C(p)
+				int neighbor0 = (int)pSrc.at<float>(i - 1, j - 1);
+				int neighbor1 = (int)pSrc.at<float>(i - 1, j);
+				int neighbor2 = (int)pSrc.at<float>(i - 1, j + 1);
+				int neighbor3 = (int)pSrc.at<float>(i, j + 1);
+				int neighbor4 = (int)pSrc.at<float>(i + 1, j + 1);
+				int neighbor5 = (int)pSrc.at<float>(i + 1, j);
+				int neighbor6 = (int)pSrc.at<float>(i + 1, j - 1);
+				int neighbor7 = (int)pSrc.at<float>(i, j - 1);
+				int C = int(~neighbor1 & (neighbor2 | neighbor3)) +
+					int(~neighbor3 & (neighbor4 | neighbor5)) +
+					int(~neighbor5 & (neighbor6 | neighbor7)) +
+					int(~neighbor7 & (neighbor0 | neighbor1));
+				if (C == 1) {
+					/// calculate N
+					int N1 = int(neighbor0 | neighbor1) +
+						int(neighbor2 | neighbor3) +
+						int(neighbor4 | neighbor5) +
+						int(neighbor6 | neighbor7);
+					int N2 = int(neighbor1 | neighbor2) +
+						int(neighbor3 | neighbor4) +
+						int(neighbor5 | neighbor6) +
+						int(neighbor7 | neighbor0);
+					int N = min(N1, N2);
+					if ((N == 2) || (N == 3)) {
+						/// calculate criteria 3
+						int c3 = (neighbor1 | neighbor2 | ~neighbor4) & neighbor3;
+						if (c3 == 0) {
+							pDst.at<float>(i, j) = 0.0f;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
 void crossing(unsigned char* img, int width, int height, int *feature) {
 	memset(feature, 0, width*height);
 	for (int i = 0; i < height - 1; i++, img += width) {
@@ -28,7 +74,7 @@ void grid(unsigned char* img, int width, int height, int *feature) {
 	}
 }
 //ROW
-void rowProjection(Mat img, int *feature,int &average) {
+void rowProjection(Mat img, int *feature, int &average) {
 	for (int i = 0; i < img.rows - 1; i++) {
 		for (int j = 0; j < img.cols - 1; j++) {
 			if ((int)img.at<uchar>(i, j)) {
@@ -44,7 +90,7 @@ void rowProjection(Mat img, int *feature,int &average) {
 
 }
 //COL
-void colProjection(Mat img, int *feature,int &average) {
+void colProjection(Mat img, int *feature, int &average) {
 	for (int i = 0; i < img.rows - 1; i++) {
 		for (int j = 0; j < img.cols - 1; j++) {
 			if ((int)img.at<uchar>(i, j)) {
@@ -176,21 +222,21 @@ int main()
 		Mat im_floodfill_inv;
 		bitwise_not(im_floodfill, im_floodfill_inv);
 		Mat im_out = (roiSubtract | im_floodfill_inv);
-		
+
 
 		int *featureMaxRowRoi = new  int[roiSubtract.rows]();
-		int avgRow=0;
+		int avgRow = 0;
 		rowProjection(im_floodfill_inv, featureMaxRowRoi, avgRow);
 
-		int startP=0, endP=0, max = 0;
+		int startP = 0, endP = 0, max = 0;
 
 
 		IplImage *image = cvCreateImage(cvSize(500, 500), 8, 3);
-		for (int i = 0; i < im_floodfill_inv.rows-1; i++) {
-			int t_startP, t_endP, t_max = 0;
-			if (featureMaxRowRoi[i] >= avgRow/2) {
+		for (int i = 0; i < im_floodfill_inv.rows - 1; i++) {
+			int t_startP, t_max = 0;
+			if (featureMaxRowRoi[i] >= avgRow / 2) {
 				t_startP = i;
-				while (featureMaxRowRoi[i++] >= avgRow/2) {
+				while (i < im_floodfill_inv.rows - 1 && featureMaxRowRoi[i++] >= avgRow / 2) {
 					t_max = i - t_startP;
 					if (t_max > max) {
 						startP = t_startP;
@@ -202,31 +248,31 @@ int main()
 
 		Mat maxColRoi(im_floodfill_inv, Rect(0, startP, im_floodfill_inv.cols, endP - startP));
 
-
 		int *featureMaxColRoi = new  int[maxColRoi.cols]();
-		int avgCol=0;
+		int avgCol = 0;
 		colProjection(maxColRoi, featureMaxColRoi, avgCol);
 
-		if(maxColRoi.cols!=0 && maxColRoi.rows!=0)
-			 imshow("maxColRoi", maxColRoi);
-
-		for (int i = 0; i < maxColRoi.cols-1; i++) {
+		for (int i = 0; i < maxColRoi.cols - 1; i++) {
 			int t_startP, t_endP = 0;
-			if (featureMaxColRoi[i] >=3) {
+			if (featureMaxColRoi[i] >= 3) {
 				t_startP = i;
-				while (featureMaxColRoi[i++] >=3) {}
+				while (featureMaxColRoi[i++] >= 3) {}
 				t_endP = i;
 				if (t_endP - t_startP > 5) {
 					cout << t_startP << " " << t_endP << endl;
-					rectangle(roi, Rect(t_startP,startP, t_endP-t_startP, endP - startP), Scalar(0, 0, 255), 1, 8, 0);
+					rectangle(roi, Rect(t_startP, startP, t_endP - t_startP, endP - startP), Scalar(0, 0, 255), 1, 8, 0);
 				}
 			}
-			cvLine(image, cvPoint(i, 0), cvPoint(i, featureMaxColRoi[i]), cvScalar(255, 255, 255));
+			//cvLine(image, cvPoint(i, 0), cvPoint(i, featureMaxColRoi[i]), cvScalar(255, 255, 255));
 		}
-		
+		ThinSubiteration1(maxColRoi, maxColRoi);
+		if (maxColRoi.cols != 0 && maxColRoi.rows != 0)//avoid crashing
+			imshow("maxColRoi", maxColRoi);
+		else
+			continue;
 
-		cvShowImage("image", image);
-		cvReleaseImage(&image);
+		/*cvShowImage("image", image);
+		cvReleaseImage(&image);*/
 
 		imshow("flood_inv", im_floodfill_inv);
 		imshow("frame", frame);
