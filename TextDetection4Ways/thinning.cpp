@@ -1,6 +1,6 @@
 #include"thinning.hpp"
 
-void ThinSubiteration1(Mat pSrc, Mat & pDst) {
+void thinSubiteration1(Mat pSrc, Mat & pDst) {
 	int rows = pSrc.rows;
 	int cols = pSrc.cols;
 	pSrc.copyTo(pDst);
@@ -45,7 +45,7 @@ void ThinSubiteration1(Mat pSrc, Mat & pDst) {
 	}
 }
 
-void ThinSubiteration2(Mat pSrc, Mat & pDst) {
+void thinSubiteration2(Mat pSrc, Mat & pDst) {
 	int rows = pSrc.rows;
 	int cols = pSrc.cols;
 	pSrc.copyTo(pDst);

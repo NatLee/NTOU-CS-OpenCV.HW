@@ -1,4 +1,5 @@
 #include"thinning.hpp"
+#include "thinning.cpp"
 
 using namespace cv;
 using namespace std;
@@ -132,8 +133,7 @@ int main()
 {
 	/*VideoCapture cap(0);
 	if (!cap.isOpened()) return -1;*/
-	double model[10][4] =
-	{ { 0.266504,0.212714,0.288509,0.232274 },{ 0.179487,0.290598,0.196581,0.333333 },{ 0.142077,0.322404,0.278689,0.256831 },{ 0.152866,0.363057,0.133758,0.350318 },{ 0.0921986,0.375887,0.184397,0.347518 },{ 0.337209,0.290698,0.116279,0.255814 },{ 0.190635,0.12709,0.327759,0.354515 },{ 0.234483,0.42069,0.117241,0.227586 },{ 0.273356,0.179931,0.290657,0.256055 },{ 0.328814,0.342373,0.122034,0.20678 } };
+
 	for (;;) {
 		Mat frame, skin;
 		//cap >> frame;
@@ -210,7 +210,7 @@ int main()
 			cvLine(image, cvPoint(i, 0), cvPoint(i, featureMaxColRoi[i]), cvScalar(255, 255, 255));
 		}
 		vector<Rect>::iterator i;
-		cout << "/////////////\n";
+		std::cout << "/////////////\n";
 		for (i = rect_temp.begin(); i != rect_temp.end(); i++) {
 			double blackdot[4] = {};
 			for (int row = i->tl().y; row < i->tl().y + i->height / 2; row++) {//left top
@@ -241,35 +241,49 @@ int main()
 					}
 				}
 			}
-			/*cout << i[0] << endl;
-			double sum = blackdot[0] + blackdot[1] + blackdot[2] + blackdot[3];
-			cout << (blackdot[0] / sum) << "," << (blackdot[1] / sum) << "," << (blackdot[2] / sum) << "," << (blackdot[3] / sum) << endl;
-			cout << blackdot[0] << " " << blackdot[1] << " " << blackdot[2] << " " << blackdot[3] << endl;*/
-			cout << "maybe  ";
+
+			int maxCorrectNumber = 0, lastCorrectNumber = 0;
 			for (int num = 0; num < 10; num++) {
 				double sum = blackdot[0] + blackdot[1] + blackdot[2] + blackdot[3];
-				int correct = 0;
-				if (blackdot[0] / sum >= model[num][0] - thres_num&&blackdot[0] / sum <= model[num][0] + thres_num) {
-					++correct;
+
+				char fileName[6] = "0.txt";
+				fileName[0] = num + '0';
+
+				freopen(fileName, "r", stdin);
+				double a, b, c, d;
+				int times=0;
+				while (scanf("%lf%lf%lf%lf", &a, &b, &c, &d) != EOF) {
+					int correct = 0;
+					if (blackdot[0] / sum >= a - thres_num&&blackdot[0] / sum <= a + thres_num) {
+						++correct;
+					}
+					if (blackdot[1] / sum >= b - thres_num&&blackdot[1] / sum <= b + thres_num) {
+						++correct;
+					}
+					if (blackdot[2] / sum >= c - thres_num&&blackdot[2] / sum <= c + thres_num) {
+						++correct;
+					}
+					if (blackdot[3] / sum >= d - thres_num&&blackdot[3] / sum <= d + thres_num) {
+						++correct;
+					}
+					if (correct > 2) {
+						times++;
+					}
 				}
-				if (blackdot[1] / sum >= model[num][1] - thres_num&&blackdot[1] / sum <= model[num][1] + thres_num) {
-					++correct;
+				if (times > maxCorrectNumber) {
+					maxCorrectNumber =times;
+					lastCorrectNumber = num;
 				}
-				if (blackdot[2] / sum >= model[num][2] - thres_num&&blackdot[2] / sum <= model[num][2] + thres_num) {
-					++correct;
-				}
-				if (blackdot[3] / sum >= model[num][3] - thres_num&&blackdot[3] / sum <= model[num][3] + thres_num) {
-					++correct;
-				}
-				if (correct >= 2) {
-					cout << num << " ";
-				}
+				fclose(stdin);
+
 			}
-			cout << endl;
+
+			std::cout << lastCorrectNumber << endl;
 		}
 
-		ThinSubiteration1(maxColRoi, maxColRoi);
-		ThinSubiteration2(maxColRoi, maxColRoi);
+		thinSubiteration1(maxColRoi, maxColRoi);
+		thinSubiteration2(maxColRoi, maxColRoi);
+
 
 		if (maxColRoi.cols != 0 && maxColRoi.rows != 0)//avoid crashing
 			cv::imshow("maxColRoi", maxColRoi);
