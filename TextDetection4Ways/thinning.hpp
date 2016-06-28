@@ -9,5 +9,5 @@
 using namespace cv;
 using namespace std;
 
-void ThinSubiteration1(Mat & pSrc, Mat & pDst);
-void ThinSubiteration2(Mat & pSrc, Mat & pDst);
+void ThinSubiteration1(Mat pSrc, Mat & pDst);
+void ThinSubiteration2(Mat pSrc, Mat & pDst);

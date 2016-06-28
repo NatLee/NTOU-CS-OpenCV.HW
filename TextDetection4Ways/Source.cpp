@@ -2,15 +2,6 @@
 
 using namespace cv;
 using namespace std;
-void crossing(unsigned char* img, int width, int height, int *feature) {
-	memset(feature, 0, width*height);
-	for (int i = 0; i < height - 1; i++, img += width) {
-		for (int j = 0; j < width - 1; j++) {
-			if (img[j] != img[j + 1])feature[i]++;
-			if (img[j] != img[j + width])feature[j + height]++;
-		}
-	}
-}
 
 void grid(unsigned char* img, int width, int height, int *feature) {
 	memset(feature, 0, (width / 4)*(height / 4));
@@ -50,7 +41,6 @@ void colProjection(Mat img, int *feature, int &average) {
 		average += feature[i];
 	}
 	average /= img.cols;
-
 }
 
 void profile(unsigned char* img, int width, int height, int *feature) {
@@ -140,13 +130,15 @@ Mat1b getDisk(int M)
 
 int main()
 {
-	VideoCapture cap(0);
-	if (!cap.isOpened()) return -1;
+	/*VideoCapture cap(0);
+	if (!cap.isOpened()) return -1;*/
 
 	for (;;) {
 		Mat frame, skin;
-		cap >> frame;
-		Rect position = Rect(frame.cols / 4, frame.rows / 4, frame.cols / 2, frame.rows / 6), temp;
+		//cap >> frame;
+		frame = imread("TEST.jpg", 1);
+		/*Rect position = Rect(frame.cols / 4, frame.rows / 4, frame.cols / 2, frame.rows / 6), temp;*/
+		Rect position = Rect(0, 0, frame.cols - 1, frame.rows - 1), temp;
 		Mat roi(frame, position);
 
 		Mat roiStrel;
@@ -195,7 +187,10 @@ int main()
 		}
 
 		Mat maxColRoi(im_floodfill_inv, Rect(0, startP, im_floodfill_inv.cols, endP - startP));
-
+		if (maxColRoi.cols != 0 && maxColRoi.rows != 0)//avoid crashing
+			imshow("maxColRoi", maxColRoi);
+		else
+			continue;
 		int *featureMaxColRoi = new  int[maxColRoi.cols]();
 		int avgCol = 0;
 		colProjection(maxColRoi, featureMaxColRoi, avgCol);
@@ -211,23 +206,19 @@ int main()
 					rectangle(roi, Rect(t_startP, startP, t_endP - t_startP, endP - startP), Scalar(0, 0, 255), 1, 8, 0);
 				}
 			}
-			//cvLine(image, cvPoint(i, 0), cvPoint(i, featureMaxColRoi[i]), cvScalar(255, 255, 255));
+			cvLine(image, cvPoint(i, 0), cvPoint(i, featureMaxColRoi[i]), cvScalar(255, 255, 255));
 		}
 		ThinSubiteration1(maxColRoi, maxColRoi);
 		ThinSubiteration2(maxColRoi, maxColRoi);
-		if (maxColRoi.cols != 0 && maxColRoi.rows != 0)//avoid crashing
-			imshow("maxColRoi", maxColRoi);
-		else
-			continue;
 
-		/*cvShowImage("image", image);
-		cvReleaseImage(&image);*/
+		cvShowImage("image", image);
+		cvReleaseImage(&image);
 
 		imshow("flood_inv", im_floodfill_inv);
 		imshow("frame", frame);
 		imshow("roi", roi);
 		//imshow("roiSubtract ", roiSubtract);
-
+		waitKey(0);
 		if (waitKey(30) >= 0) break;
 	}
 
